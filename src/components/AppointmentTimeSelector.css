@@ -1,0 +1,313 @@
+/* Appointment Time Selector Styles */
+.appointment-time-selector {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.appointment-time-selector.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.disabled-text {
+  padding: 8px 12px;
+  color: #6b7280;
+  font-style: italic;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Compact mode - dropdown style */
+.appointment-time-selector.compact {
+  position: relative;
+}
+
+.time-selector-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  min-width: 200px;
+  position: relative;
+  overflow: hidden;
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+}
+
+.time-selector-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.08), transparent);
+  transition: left 0.5s ease;
+}
+
+/* Disable mouse events on all child elements to prevent interference */
+.time-selector-button * {
+  pointer-events: none;
+}
+
+.time-selector-button:hover {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.time-selector-button:hover::before {
+  left: 100%;
+}
+
+.time-selector-button.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-color: #1d4ed8;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+}
+
+.time-selector-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.time-label {
+  font-weight: 500;
+  color: #374151;
+  position: relative;
+  z-index: 1;
+}
+
+.time-selector-button.active .time-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.appointment-time-selector .time-value {
+  font-weight: 600;
+  color: #1f2937;
+  flex: 1;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.appointment-time-selector .time-value.placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.time-selector-button.active .time-value {
+  color: white;
+}
+
+.time-selector-button.active .time-value.placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dropdown-arrow {
+  font-size: 12px;
+  color: #6b7280;
+  transition: transform 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.time-selector-button.active .dropdown-arrow {
+  transform: rotate(180deg);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Time grid popup */
+.time-grid-popup {
+  position: absolute;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  min-width: 340px;
+  max-width: 420px;
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.appointment-time-selector .popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 2px solid #e2e8f0;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 8px 8px 0 0;
+  color: white;
+}
+
+.appointment-time-selector .popup-header h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.close-button:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+/* Backdrop - covers full screen for tap-to-close on touch devices */
+.selector-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.05);
+  z-index: 999;
+  touch-action: manipulation;
+}
+
+@media (hover: none) {
+  /* Slightly darker backdrop on touch devices for visual feedback */
+  .selector-backdrop {
+    background: rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Full mode - inline grid */
+.appointment-time-selector.full {
+  /* Inherits default styles */
+}
+
+.selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.selector-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.current-selection {
+  font-size: 14px;
+  color: #374151;
+}
+
+.current-selection strong {
+  color: #1f2937;
+}
+
+/* Grid styling */
+.appointment-grid {
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.appointment-grid .time-slot-grid {
+  border-radius: 6px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .time-grid-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    width: 90vw;
+    max-width: 350px;
+    margin-top: 0;
+  }
+
+  .time-selector-button {
+    min-width: 150px;
+  }
+
+  .appointment-grid {
+    max-height: 250px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 480px) {
+  .time-grid-popup {
+    width: 95vw;
+    max-width: none;
+  }
+
+  .time-selector-button {
+    font-size: 16px; /* Prevent iOS zoom on focus */
+    padding: 14px 12px; /* Better touch target */
+    min-height: 48px;
+    min-width: 100%;
+  }
+
+  .appointment-grid {
+    max-height: 280px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .selector-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .popup-header {
+    padding: 14px 16px;
+  }
+
+  .close-button {
+    width: 44px;
+    height: 44px;
+    font-size: 24px;
+  }
+}
+
+/* Focus styles for accessibility */
+.time-selector-button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}

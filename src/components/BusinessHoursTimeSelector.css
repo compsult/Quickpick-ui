@@ -1,0 +1,222 @@
+/* Business Hours Time Selector Styles */
+.business-hours-time-selector {
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.business-hours-time-selector.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.unavailable-text {
+  padding: 8px 12px;
+  color: #6b7280;
+  font-style: italic;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Time input buttons row */
+.time-inputs-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.time-input-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  position: relative;
+  overflow: hidden;
+  pointer-events: auto;
+  touch-action: manipulation; /* Prevent double-tap zoom */
+  -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
+}
+
+/* Disable mouse events on all child elements to prevent interference */
+.time-input-button * {
+  pointer-events: none;
+}
+
+.time-input-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.time-input-button:hover {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-color: #667eea;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.time-input-button:hover::before {
+  left: 100%;
+}
+
+.time-input-button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #5a67d8;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.business-hours-time-selector .time-value {
+  font-size: 14px;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+/* Popup selector */
+.time-selector-popup {
+  position: absolute;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 8px 16px -4px rgba(102, 126, 234, 0.1);
+  z-index: 1000;
+  min-width: 360px;
+  max-width: 500px;
+  animation: popupSlideIn 0.25s ease-out;
+}
+
+.business-hours-time-selector .popup-header {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 2px solid #e2e8f0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px 12px 0 0;
+  color: white;
+}
+
+.business-hours-time-selector .popup-header h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  flex: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Backdrop - covers full screen for tap-to-close on touch devices */
+.business-hours-time-selector .selector-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  touch-action: manipulation;
+}
+
+@media (hover: none) {
+  .business-hours-time-selector .selector-backdrop {
+    background: rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .time-selector-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    width: 90vw;
+    min-width: 320px;
+    max-width: 420px;
+    margin-top: 0;
+  }
+
+  .time-inputs-row {
+    gap: 8px;
+  }
+
+  .time-input-button {
+    min-width: 70px;
+    padding: 6px 10px;
+  }
+
+  .business-hours-time-selector .time-value {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .time-inputs-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .time-input-button {
+    flex-direction: row;
+    justify-content: center;
+    min-width: auto;
+    min-height: 48px; /* Google recommended touch target */
+    font-size: 16px; /* Prevent iOS zoom on focus */
+  }
+
+  .time-selector-popup {
+    width: 95vw;
+    min-width: 300px;
+    max-width: 350px;
+  }
+}
+
+/* Focus styles for accessibility */
+.time-input-button:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* Animation for popup appearance */
+@keyframes popupSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Enhanced styling for business hours section */
+.business-hours-time-selector {
+  margin: 8px 0;
+}
+
+.time-inputs-row {
+  margin-bottom: 4px;
+}
+
+/* Additional hover effects */
+.time-input-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}

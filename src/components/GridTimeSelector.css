@@ -1,0 +1,143 @@
+/* Grid Time Selector Styles */
+.grid-time-selector {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  padding: 12px;
+}
+
+.grid-time-selector.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.time-grid {
+  display: flex;
+  gap: 8px;
+}
+
+.hour-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.header-spacer {
+  height: 28px;
+}
+
+.hour-label {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  white-space: nowrap;
+  padding-right: 8px;
+}
+
+.minute-columns {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.minute-headers {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  height: 28px;
+}
+
+.minute-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.time-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hour-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+}
+
+.grid-time-selector .time-slot {
+  height: 36px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.grid-time-selector .time-slot:hover:not(:disabled) {
+  background: #e0f7fa;
+  color: #00695c;
+  border-color: #4db6ac;
+}
+
+.grid-time-selector .time-slot.selected {
+  background: #b2dfdb;
+  color: #004d40;
+  font-weight: 600;
+  border-color: #26a69a;
+}
+
+.grid-time-selector .time-slot.unavailable {
+  background: #f9fafb;
+  color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.selected-time {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #f0fdfa;
+  border: 1px solid #b2dfdb;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #374151;
+  text-align: center;
+}
+
+.selected-time strong {
+  color: #004d40;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .grid-time-selector {
+    padding: 8px;
+  }
+
+  .hour-label {
+    font-size: 10px;
+  }
+
+  .grid-time-selector .time-slot {
+    height: 44px;
+    font-size: 14px;
+  }
+}
