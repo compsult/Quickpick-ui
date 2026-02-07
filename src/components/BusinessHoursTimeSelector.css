@@ -95,20 +95,45 @@
   border-radius: 12px;
   box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 8px 16px -4px rgba(102, 126, 234, 0.1);
   z-index: 1000;
-  min-width: 360px;
-  max-width: 500px;
+  max-height: 420px;
+  overflow: hidden;
   animation: popupSlideIn 0.25s ease-out;
+}
+
+/* Width-sharing wrapper — header + grid are siblings in the same block
+   flow so they always have identical width. Grid-body keeps its own
+   scrollbar; this container just constrains overall height. */
+.time-selector-popup .popup-scroll-area {
+  max-height: 420px;
+  overflow: hidden;
+}
+
+/* Let grid use its natural width inside popup */
+.time-selector-popup .time-slot-grid {
+  width: auto;
+  min-width: 320px;
+  max-width: 450px;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.time-selector-popup .scroll-indicator {
+  display: none;
 }
 
 .business-hours-time-selector .popup-header {
   display: flex;
-  justify-content: between;
+  justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
   border-bottom: 2px solid #e2e8f0;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 12px 12px 0 0;
   color: white;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .business-hours-time-selector .popup-header h4 {

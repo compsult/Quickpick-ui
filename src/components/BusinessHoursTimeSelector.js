@@ -22,7 +22,7 @@ const BusinessHoursTimeSelector = ({
   const endButtonRef = useRef(null);
   const mouseTrackingIntervalRef = useRef(null);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
-  const [popupPosition, setPopupPosition] = useState({ top: '100%', left: '0', right: '0', transform: 'none' });
+  const [popupPosition, setPopupPosition] = useState({ top: '100%', left: '0', transform: 'none' });
 
   const formatTime12Hour = (time24) => {
     if (!time24) return '';
@@ -67,7 +67,6 @@ const BusinessHoursTimeSelector = ({
     let position = {
       top: '100%',
       left: '0',
-      right: '0',
       transform: 'none'
     };
 
@@ -295,17 +294,19 @@ const BusinessHoursTimeSelector = ({
             transform: popupPosition.transform
           }}
         >
-          <div className="popup-header">
-            <h4>Select {activeSelector === 'start' ? 'Start' : 'End'} Time</h4>
-          </div>
+          <div className="popup-scroll-area">
+            <div className="popup-header">
+              <h4>Select {activeSelector === 'start' ? 'Start' : 'End'} Time</h4>
+            </div>
 
-          <TimeSlotGrid
-            value={activeSelector === 'start' ? startTime : endTime}
-            onChange={handleTimeChange}
-            minTime="06:00"
-            maxTime="22:00"
-            showHeader={false}
-          />
+            <TimeSlotGrid
+              value={activeSelector === 'start' ? startTime : endTime}
+              onChange={handleTimeChange}
+              minTime="06:00"
+              maxTime="22:00"
+              showHeader={false}
+            />
+          </div>
         </div>
       )}
 
