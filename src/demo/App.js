@@ -416,6 +416,12 @@ export default function BookPage({ businessHours }) {
                 <li>Auto-closes after selecting a time</li>
                 <li>Smart positioning avoids viewport edges</li>
               </ul>
+              <h3>popupWidth prop</h3>
+              <ul>
+                <li><code>'match-button'</code> (default) — stretches to button width</li>
+                <li><code>'auto'</code> — sizes to grid content</li>
+                <li>CSS value (e.g. <code>'350px'</code>) — explicit width</li>
+              </ul>
               <div className="selected-display">
                 Selected: <strong>{compactTime || 'none'}</strong>
               </div>

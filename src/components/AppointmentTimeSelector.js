@@ -13,7 +13,8 @@ const AppointmentTimeSelector = ({
   businessHours,
   disabled = false,
   className = '',
-  compact = false
+  compact = false,
+  popupWidth = 'match-button'  // 'match-button' | 'auto' | CSS value (e.g. '350px')
 }) => {
   const [isGridOpen, setIsGridOpen] = useState(false);
   const hoverTimeoutRef = useRef(null);
@@ -22,7 +23,17 @@ const AppointmentTimeSelector = ({
   const buttonRef = useRef(null);
   const mouseTrackingIntervalRef = useRef(null);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
-  const [popupPosition, setPopupPosition] = useState({ top: '100%', left: '0', right: '0', transform: 'none' });
+  // Build default position based on popupWidth mode
+  const getDefaultPosition = useCallback(() => {
+    const base = { top: '100%', left: '0', transform: 'none' };
+    if (popupWidth === 'match-button') {
+      base.right = '0'; // stretch to button width
+    } else if (popupWidth !== 'auto') {
+      base.width = popupWidth; // explicit CSS value
+    }
+    return base;
+  }, [popupWidth]);
+  const [popupPosition, setPopupPosition] = useState(getDefaultPosition);
 
   const formatTime12Hour = (time24) => {
     if (!time24) return '';
@@ -75,14 +86,11 @@ const AppointmentTimeSelector = ({
 
     // Popup dimensions (approximate)
     const popupHeight = 400; // max-height from CSS
-    const popupWidth = 340; // min-width from CSS
+    const estimatedPopupWidth = popupWidth === 'match-button'
+      ? containerRect.width
+      : popupWidth !== 'auto' ? parseInt(popupWidth, 10) || 340 : 340;
 
-    let position = {
-      top: '100%',
-      left: '0',
-      right: '0',
-      transform: 'none'
-    };
+    let position = getDefaultPosition();
 
     // Check if popup would extend below viewport
     const spaceBelow = viewportHeight - containerRect.bottom;
@@ -97,22 +105,24 @@ const AppointmentTimeSelector = ({
       position.top = 'calc(100% - 4px)'; // 4px overlap
     }
 
-    // Check horizontal positioning
-    const spaceRight = viewportWidth - containerRect.left;
-    const spaceLeft = containerRect.right;
+    // Check horizontal positioning (skip for match-button mode since it stretches)
+    if (popupWidth !== 'match-button') {
+      const spaceRight = viewportWidth - containerRect.left;
 
-    if (spaceRight < popupWidth && spaceLeft > popupWidth) {
-      // Align to right edge
-      position.left = 'auto';
-      position.right = '0';
-    } else if (containerRect.left + popupWidth > viewportWidth) {
-      // Center or adjust to fit
-      const overflow = (containerRect.left + popupWidth) - viewportWidth;
-      position.transform = `translateX(-${overflow + 10}px)`;
+      if (containerRect.left + estimatedPopupWidth > viewportWidth) {
+        if (spaceRight < estimatedPopupWidth) {
+          // Align to right edge of button instead of left
+          position.left = 'auto';
+          position.right = '0';
+        } else {
+          const overflow = (containerRect.left + estimatedPopupWidth) - viewportWidth;
+          position.transform = `translateX(-${overflow + 10}px)`;
+        }
+      }
     }
 
     setPopupPosition(position);
-  }, []);
+  }, [popupWidth, getDefaultPosition]);
 
 
   // Calculate position when popup becomes active
@@ -284,7 +294,7 @@ const AppointmentTimeSelector = ({
             />
             <div
               ref={popupRef}
-              className="time-grid-popup"
+              className={`time-grid-popup ${popupWidth === 'match-button' ? 'popup-stretch' : popupWidth !== 'auto' ? 'popup-stretch' : 'popup-auto'}`}
               onMouseEnter={handlePopupMouseEnter}
               style={{
                 position: 'absolute',
@@ -292,23 +302,24 @@ const AppointmentTimeSelector = ({
                 bottom: popupPosition.bottom,
                 left: popupPosition.left,
                 right: popupPosition.right,
-                marginTop: popupPosition.marginTop,
-                marginBottom: popupPosition.marginBottom,
+                width: popupPosition.width,
                 transform: popupPosition.transform
               }}
             >
-              <div className="popup-header">
-                <h4>Select Appointment Time</h4>
-              </div>
+              <div className="popup-scroll-area">
+                <div className="popup-header">
+                  <h4>Select Appointment Time</h4>
+                </div>
 
-              <TimeSlotGrid
-                value={selectedTime}
-                onChange={handleTimeSelect}
-                minTime={minTime}
-                maxTime={maxTime}
-                showHeader={false}
-                className="appointment-grid"
-              />
+                <TimeSlotGrid
+                  value={selectedTime}
+                  onChange={handleTimeSelect}
+                  minTime={minTime}
+                  maxTime={maxTime}
+                  showHeader={false}
+                  className="appointment-grid"
+                />
+              </div>
             </div>
           </>
         )}
