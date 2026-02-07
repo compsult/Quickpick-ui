@@ -302,8 +302,8 @@ const BusinessHoursTimeSelector = ({
             <TimeSlotGrid
               value={activeSelector === 'start' ? startTime : endTime}
               onChange={handleTimeChange}
-              minTime="06:00"
-              maxTime="22:00"
+              minTime={activeSelector === 'start' ? '06:00' : startTime}
+              maxTime={activeSelector === 'end' ? '22:00' : endTime}
               showHeader={false}
             />
           </div>
