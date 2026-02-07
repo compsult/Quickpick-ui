@@ -13,7 +13,6 @@ const AppointmentTimeSelector = ({
   businessHours,
   disabled = false,
   className = '',
-  compact = false,
   popupWidth = 'match-button'  // 'match-button' | 'auto' | CSS value (e.g. '350px')
 }) => {
   const [isGridOpen, setIsGridOpen] = useState(false);
@@ -127,25 +126,25 @@ const AppointmentTimeSelector = ({
 
   // Calculate position when popup becomes active
   useEffect(() => {
-    if (isGridOpen && compact) {
+    if (isGridOpen) {
       // Small delay to ensure DOM is updated
       setTimeout(() => {
         calculatePopupPosition();
       }, 10);
     }
-  }, [isGridOpen, compact, calculatePopupPosition]);
+  }, [isGridOpen, calculatePopupPosition]);
 
   // Recalculate on window resize
   useEffect(() => {
     const handleResize = () => {
-      if (isGridOpen && compact) {
+      if (isGridOpen) {
         calculatePopupPosition();
       }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [isGridOpen, compact, calculatePopupPosition]);
+  }, [isGridOpen, calculatePopupPosition]);
 
 
   // Click handler for touch devices (and works as fallback on desktop)
@@ -250,12 +249,12 @@ const AppointmentTimeSelector = ({
   useEffect(() => {
     if (isTouchDevice()) return;
 
-    if (isGridOpen && compact) {
+    if (isGridOpen) {
       startMouseTracking();
     } else {
       stopMouseTracking();
     }
-  }, [isGridOpen, compact, startMouseTracking, stopMouseTracking]);
+  }, [isGridOpen, startMouseTracking, stopMouseTracking]);
 
   if (disabled) {
     return (
@@ -265,88 +264,63 @@ const AppointmentTimeSelector = ({
     );
   }
 
-  if (compact) {
-    return (
-      <div
-        ref={containerRef}
-        className={`appointment-time-selector compact ${className}`}
-      >
-        <button
-          ref={buttonRef}
-          type="button"
-          className={`time-selector-button ${isGridOpen ? 'active' : ''}`}
-          onClick={handleButtonClick}
-          onMouseEnter={isGridOpen ? undefined : handleButtonMouseEnter}
-        >
-          <span className="time-label">Time:</span>
-          <span className={`time-value${selectedTime ? '' : ' placeholder'}`}>
-            {selectedTime ? formatTime12Hour(selectedTime) : 'Select Time'}
-          </span>
-          <span className="dropdown-arrow">&#9660;</span>
-        </button>
-
-        {isGridOpen && (
-          <>
-            {/* Backdrop for tap-to-close on touch and click-away on desktop */}
-            <div
-              className="selector-backdrop"
-              onClick={handleBackdropClose}
-            />
-            <div
-              ref={popupRef}
-              className={`time-grid-popup ${popupWidth === 'match-button' ? 'popup-stretch' : popupWidth !== 'auto' ? 'popup-stretch' : 'popup-auto'}`}
-              onMouseEnter={handlePopupMouseEnter}
-              style={{
-                position: 'absolute',
-                top: popupPosition.top,
-                bottom: popupPosition.bottom,
-                left: popupPosition.left,
-                right: popupPosition.right,
-                width: popupPosition.width,
-                transform: popupPosition.transform
-              }}
-            >
-              <div className="popup-scroll-area">
-                <div className="popup-header">
-                  <h4>Select Appointment Time</h4>
-                </div>
-
-                <TimeSlotGrid
-                  value={selectedTime}
-                  onChange={handleTimeSelect}
-                  minTime={minTime}
-                  maxTime={maxTime}
-                  showHeader={false}
-                  className="appointment-grid"
-                />
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    );
-  }
-
-  // Full grid display for inline use
   return (
-    <div className={`appointment-time-selector full ${className}`}>
-      <div className="selector-header">
-        <h4>Select Appointment Time</h4>
-        {selectedTime && (
-          <div className="current-selection">
-            Selected: <strong>{formatTime12Hour(selectedTime)}</strong>
-          </div>
-        )}
-      </div>
+    <div
+      ref={containerRef}
+      className={`appointment-time-selector ${className}`}
+    >
+      <button
+        ref={buttonRef}
+        type="button"
+        className={`time-selector-button ${isGridOpen ? 'active' : ''}`}
+        onClick={handleButtonClick}
+        onMouseEnter={isGridOpen ? undefined : handleButtonMouseEnter}
+      >
+        <span className="time-label">Time:</span>
+        <span className={`time-value${selectedTime ? '' : ' placeholder'}`}>
+          {selectedTime ? formatTime12Hour(selectedTime) : 'Select Time'}
+        </span>
+        <span className="dropdown-arrow">&#9660;</span>
+      </button>
 
-      <TimeSlotGrid
-        value={selectedTime}
-        onChange={onTimeChange}
-        minTime={minTime}
-        maxTime={maxTime}
-        showHeader={false}
-        className="appointment-grid"
-      />
+      {isGridOpen && (
+        <>
+          {/* Backdrop for tap-to-close on touch and click-away on desktop */}
+          <div
+            className="selector-backdrop"
+            onClick={handleBackdropClose}
+          />
+          <div
+            ref={popupRef}
+            className={`time-grid-popup ${popupWidth === 'auto' ? 'popup-auto' : 'popup-stretch'}`}
+            onMouseEnter={handlePopupMouseEnter}
+            style={{
+              position: 'absolute',
+              top: popupPosition.top,
+              bottom: popupPosition.bottom,
+              left: popupPosition.left,
+              right: popupPosition.right,
+              width: popupPosition.width,
+              transform: popupPosition.transform
+            }}
+          >
+            <div className="popup-scroll-area">
+              <div className="popup-header">
+                <h4>Select Appointment Time</h4>
+              </div>
+
+              <TimeSlotGrid
+                value={selectedTime}
+                onChange={handleTimeSelect}
+                minTime={minTime}
+                maxTime={maxTime}
+                showHeader={false}
+                className="appointment-grid"
+              />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
