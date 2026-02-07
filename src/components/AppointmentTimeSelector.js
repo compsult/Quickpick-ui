@@ -13,7 +13,7 @@ const AppointmentTimeSelector = ({
   businessHours,
   disabled = false,
   className = '',
-  popupWidth = 'match-button'  // 'match-button' | 'auto' | CSS value (e.g. '350px')
+  popupWidth = 'auto'  // 'auto' | 'match-button' | CSS value (e.g. '350px')
 }) => {
   const [isGridOpen, setIsGridOpen] = useState(false);
   const hoverTimeoutRef = useRef(null);
@@ -276,9 +276,8 @@ const AppointmentTimeSelector = ({
         onClick={handleButtonClick}
         onMouseEnter={isGridOpen ? undefined : handleButtonMouseEnter}
       >
-        <span className="time-label">Time:</span>
         <span className={`time-value${selectedTime ? '' : ' placeholder'}`}>
-          {selectedTime ? formatTime12Hour(selectedTime) : 'Select Time'}
+          {selectedTime ? formatTime12Hour(selectedTime) : `Select${selectedDate ? ' ' + selectedDate.toLocaleDateString('en-US', { weekday: 'long' }) : ''} time`}
         </span>
         <span className="dropdown-arrow">&#9660;</span>
       </button>
@@ -305,10 +304,6 @@ const AppointmentTimeSelector = ({
             }}
           >
             <div className="popup-scroll-area">
-              <div className="popup-header">
-                <h4>Select Appointment Time</h4>
-              </div>
-
               <TimeSlotGrid
                 value={selectedTime}
                 onChange={handleTimeSelect}

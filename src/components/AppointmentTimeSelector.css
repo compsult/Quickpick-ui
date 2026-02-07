@@ -24,7 +24,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
+  width: auto;
   padding: 10px 16px;
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   border: 2px solid #e2e8f0;
@@ -32,7 +32,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 14px;
-  min-width: 200px;
+  min-width: 320px;
+  max-width: 450px;
   position: relative;
   overflow: hidden;
   pointer-events: auto;
@@ -93,6 +94,7 @@
 
 .appointment-time-selector .time-value {
   font-weight: 600;
+  font-size: 16px;
   color: #1f2937;
   flex: 1;
   text-align: center;
@@ -101,8 +103,8 @@
 }
 
 .appointment-time-selector .time-value.placeholder {
-  color: #9ca3af;
-  font-weight: 400;
+  color: #4b5563;
+  font-weight: 500;
 }
 
 .time-selector-button.active .time-value {
@@ -138,50 +140,22 @@
   overflow: hidden;
 }
 
-/*
- * Single scroll container for BOTH header and grid.
- * Header + grid are siblings in the same block flow so they always share
- * exactly the same width.  The header uses position:sticky to stay visible.
- * Scrollbar is hidden — users scroll via wheel / trackpad / touch.
- */
+/* Width-sharing wrapper — header + grid are siblings in the same block
+   flow so they always have identical width. Grid-body keeps its own
+   scrollbar; this container just constrains overall height. */
 .popup-scroll-area {
   max-height: 400px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  scrollbar-width: none; /* Firefox */
-}
-
-.popup-scroll-area::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
-}
-
-/* Grid inside scroll area — disable its own scroll (wrapper handles it) */
-.time-grid-popup .appointment-grid {
-  overflow: visible;
-  max-height: none;
+  overflow: hidden;
 }
 
 /* Shared grid overrides inside popup */
 .time-grid-popup .time-slot-grid {
+  width: auto;
+  min-width: 320px;
+  max-width: 450px;
   border: none;
   border-radius: 0;
   box-shadow: none;
-}
-
-.time-grid-popup .time-row {
-  gap: 1px;
-}
-
-.time-grid-popup .time-slot {
-  margin: 0;
-  border-radius: 0;
-}
-
-.time-grid-popup .grid-body {
-  max-height: none;
-  overflow: visible;
 }
 
 .time-grid-popup .scroll-indicator {
