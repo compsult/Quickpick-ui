@@ -86,7 +86,7 @@ function App() {
     <div className="demo-app">
       <header className="demo-header">
         <h1>Quickpick UI</h1>
-        <p>Fast, touch-friendly time pickers for React &amp; Next.js</p>
+        <p>Fast, touch-friendly time pickers for React &amp; Next.js — type to filter on desktop</p>
       </header>
 
       <main className="demo-sections">
@@ -96,6 +96,7 @@ function App() {
           <p className="description">
             Dropdown button that opens a time grid popup.
             Hover-to-open on desktop, tap-to-toggle on mobile.
+            On desktop, type in the input to filter visible time slots — Enter selects the first match, Escape closes.
             Auto-positions above/below based on viewport space.
           </p>
           <div className="demo-row">
@@ -127,7 +128,8 @@ function App() {
               <h3>Behavior</h3>
               <ul>
                 <li>Desktop: hover to open, mouse-leave to close</li>
-                <li>Mobile: tap button to open, tap backdrop to close</li>
+                <li>Desktop: type in the input to filter options — Enter selects first match, Escape closes</li>
+                <li>Mobile: tap button to open, tap backdrop to close (input stays read-only)</li>
                 <li>Auto-closes after selecting a time</li>
                 <li>Smart positioning avoids viewport edges</li>
               </ul>
@@ -272,6 +274,7 @@ export default function BookPage({ businessHours }) {
             The same popup grid used as a generic select list.
             Pass an <code>items</code> array instead of business hours.
             Adaptive columns: long labels → 2 cols.
+            On desktop, type to filter — try typing "new" to find New Hampshire, New Jersey, New Mexico, and New York.
           </p>
           <div className="demo-row">
             <div className="demo-widget" style={{ minHeight: '60px' }}>
@@ -304,6 +307,7 @@ export default function BookPage({ businessHours }) {
           <h2>Generic Data — Colors</h2>
           <p className="description">
             Short labels auto-select 3 columns. Value equals label for simple lists.
+            Type to filter on desktop.
           </p>
           <div className="demo-row">
             <div className="demo-widget" style={{ minHeight: '60px' }}>
@@ -328,6 +332,7 @@ export default function BookPage({ businessHours }) {
           <h2>Generic Data — Service Types</h2>
           <p className="description">
             Value/label pairs with longer labels → 2 columns.
+            Type to filter on desktop.
           </p>
           <div className="demo-row">
             <div className="demo-widget" style={{ minHeight: '60px' }}>
@@ -353,6 +358,7 @@ export default function BookPage({ businessHours }) {
           <p className="description">
             Dual start/end time selector for configuring business hours.
             Each button opens a time grid popup (6 AM - 10 PM range).
+            On desktop, type in either input to filter times — try typing "2p" to jump to 2 PM.
           </p>
           <div className="demo-row">
             <div className="demo-widget">
