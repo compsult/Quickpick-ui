@@ -59,7 +59,7 @@
   padding: 10px 6px;
   border: 1px solid #e5e7eb;
   background: transparent;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: #374151;
   cursor: pointer;
@@ -165,7 +165,7 @@
 
   .time-slot {
     padding: 8px 2px;
-    font-size: 10px;
+    font-size: 13px;
     min-height: 32px;
     min-width: 70px;
   }
@@ -183,7 +183,7 @@
   }
 
   .time-slot {
-    font-size: 14px; /* Larger text for readability */
+    font-size: 16px; /* Larger text for readability */
     min-height: 48px; /* Google recommended minimum touch target */
     min-width: 48px;
     padding: 12px 8px;
