@@ -14,6 +14,7 @@ const AppointmentTimeSelector = ({
   disabled = false,
   className = '',
   popupWidth = 'auto',  // 'auto' | 'match-button' | CSS value (e.g. '350px')
+  width = null,         // CSS value for trigger+popup width (e.g. '400px', '100%'); null = match popup
   items = null,
   selectedValue = null,
   placeholder = null,
@@ -275,6 +276,7 @@ const AppointmentTimeSelector = ({
     <div
       ref={containerRef}
       className={`appointment-time-selector ${className}`}
+      style={width ? { width } : undefined}
     >
       <div
         ref={buttonRef}
@@ -314,7 +316,7 @@ const AppointmentTimeSelector = ({
           />
           <div
             ref={popupRef}
-            className={`time-grid-popup ${popupWidth === 'auto' ? 'popup-auto' : 'popup-stretch'}`}
+            className={`time-grid-popup ${(width || popupWidth !== 'auto') ? 'popup-stretch' : 'popup-auto'}`}
             onMouseEnter={handlePopupMouseEnter}
             style={{
               position: 'absolute',
@@ -322,7 +324,7 @@ const AppointmentTimeSelector = ({
               bottom: popupPosition.bottom,
               left: popupPosition.left,
               right: popupPosition.right,
-              width: popupPosition.width,
+              width: width ? '100%' : popupPosition.width,
               transform: popupPosition.transform
             }}
           >

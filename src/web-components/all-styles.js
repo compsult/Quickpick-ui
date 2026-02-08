@@ -214,6 +214,8 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
 .appointment-time-selector {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   position: relative;
+  display: inline-block;
+  width: 320px;
 }
 
 .appointment-time-selector.disabled {
@@ -237,8 +239,7 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
   align-items: flex-end;
   gap: 8px;
   cursor: pointer;
-  min-width: 200px;
-  max-width: 450px;
+  width: 100%;
   padding: 8px 12px 6px;
   background: #f8fafc;
   border-radius: 6px 6px 0 0;
@@ -352,6 +353,7 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
   z-index: 1000;
   max-height: 400px;
   overflow: hidden;
+  min-width: 100%;
 }
 
 .popup-scroll-area {
@@ -446,10 +448,11 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
     transform: translate(-50%, -50%);
     width: 90vw;
     max-width: 350px;
+    min-width: 0;
     margin-top: 0;
   }
-  .time-selector-trigger {
-    min-width: 150px;
+  .appointment-time-selector {
+    width: 100%;
   }
   .dropdown-arrow {
     font-size: 14px;
@@ -462,7 +465,6 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
     max-width: none;
   }
   .time-selector-trigger {
-    min-width: 100%;
     padding: 10px 14px 8px;
   }
   .time-selector-input {
@@ -486,6 +488,8 @@ export const businessHoursCSS = `/* Business Hours Time Selector Styles */
   position: relative;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   margin: 8px 0;
+  display: inline-block;
+  width: 320px;
 }
 
 .business-hours-time-selector.disabled {
@@ -505,81 +509,134 @@ export const businessHoursCSS = `/* Business Hours Time Selector Styles */
 
 .time-inputs-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 12px;
   flex-wrap: wrap;
   margin-bottom: 4px;
 }
 
-.time-input-button {
+.time-separator {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 500;
+  padding-bottom: 10px;
+}
+
+.time-input-trigger {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 16px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
+  align-items: flex-end;
+  gap: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 120px;
-  position: relative;
-  overflow: hidden;
-  pointer-events: auto;
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px 6px;
+  background: #f8fafc;
+  border-radius: 6px 6px 0 0;
+  transition: background 0.2s ease;
   touch-action: manipulation;
   -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
 }
 
-.time-input-button * {
+.time-input-trigger:hover {
+  background: #f1f5f9;
+}
+
+.time-input-trigger.active {
+  background: #eef2ff;
+}
+
+.time-input-trigger * {
   pointer-events: none;
 }
 
-.time-input-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
+.time-input-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.time-input-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  margin-bottom: 2px;
+  transition: color 0.2s ease;
+  line-height: 1;
+}
+
+.time-input-trigger.active .time-input-label {
+  color: #667eea;
+}
+
+.time-input-value {
   width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
-  transition: left 0.5s ease;
+  border: none;
+  border-bottom: 2px solid #cbd5e1;
+  background: transparent;
+  padding: 6px 0;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #1f2937;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  min-width: 0;
 }
 
-.time-input-button:hover {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-color: #667eea;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+.time-input-value::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
 }
 
-.time-input-button:hover::before {
-  left: 100%;
+.time-input-trigger:hover .time-input-value {
+  border-bottom-color: #667eea;
 }
 
-.time-input-button.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: #5a67d8;
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+.time-input-trigger.active .time-input-value {
+  border-bottom-color: #667eea;
 }
 
-.business-hours-time-selector .time-value {
-  font-size: 14px;
-  font-weight: 600;
-  position: relative;
-  z-index: 1;
+.time-input-trigger:focus {
+  outline: none;
+}
+
+.time-input-trigger:focus .time-input-value {
+  border-bottom-color: #667eea;
+}
+
+.time-input-trigger:focus .time-input-label {
+  color: #667eea;
+}
+
+.business-hours-time-selector .dropdown-arrow {
+  font-size: 12px;
+  color: #94a3b8;
+  transition: transform 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+  padding-bottom: 8px;
+}
+
+.time-input-trigger.active .dropdown-arrow {
+  transform: rotate(180deg);
+  color: #667eea;
+}
+
+.time-input-trigger:hover .dropdown-arrow {
+  color: #667eea;
 }
 
 .time-selector-popup {
   position: absolute;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 8px 16px -4px rgba(102, 126, 234, 0.1);
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   z-index: 1000;
   max-height: 420px;
   overflow: hidden;
-  animation: popupSlideIn 0.25s ease-out;
+  min-width: 100%;
 }
 
 .time-selector-popup .popup-scroll-area {
@@ -604,10 +661,10 @@ export const businessHoursCSS = `/* Business Hours Time Selector Styles */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 14px 16px;
   border-bottom: 2px solid #e2e8f0;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px 12px 0 0;
+  border-radius: 8px 8px 0 0;
   color: white;
   position: sticky;
   top: 0;
@@ -616,7 +673,7 @@ export const businessHoursCSS = `/* Business Hours Time Selector Styles */
 
 .business-hours-time-selector .popup-header h4 {
   margin: 0;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   color: white;
   flex: 1;
@@ -629,14 +686,18 @@ export const businessHoursCSS = `/* Business Hours Time Selector Styles */
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.05);
   z-index: 999;
   touch-action: manipulation;
 }
 
 @media (hover: none) {
   .business-hours-time-selector .selector-backdrop {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.15);
+  }
+  .time-input-trigger {
+    background: #f1f5f9;
+    padding: 10px 14px 8px;
   }
 }
 
@@ -648,19 +709,18 @@ export const businessHoursCSS = `/* Business Hours Time Selector Styles */
     right: auto;
     transform: translate(-50%, -50%);
     width: 90vw;
-    min-width: 320px;
+    min-width: 0;
     max-width: 420px;
     margin-top: 0;
+  }
+  .business-hours-time-selector {
+    width: 100%;
   }
   .time-inputs-row {
     gap: 8px;
   }
-  .time-input-button {
-    min-width: 70px;
-    padding: 6px 10px;
-  }
-  .business-hours-time-selector .time-value {
-    font-size: 12px;
+  .business-hours-time-selector .dropdown-arrow {
+    font-size: 14px;
   }
 }
 
@@ -670,37 +730,26 @@ export const businessHoursCSS = `/* Business Hours Time Selector Styles */
     align-items: stretch;
     gap: 8px;
   }
-  .time-input-button {
-    flex-direction: row;
-    justify-content: center;
-    min-width: auto;
-    min-height: 48px;
+  .time-separator {
+    display: none;
+  }
+  .time-input-trigger {
+    padding: 10px 14px 8px;
+  }
+  .time-input-value {
     font-size: 16px;
+    padding: 8px 0;
+    min-height: 44px;
+  }
+  .business-hours-time-selector .dropdown-arrow {
+    font-size: 16px;
+  }
+  .time-input-label {
+    font-size: 13px;
   }
   .time-selector-popup {
     width: 95vw;
     min-width: 300px;
     max-width: 350px;
   }
-}
-
-.time-input-button:focus {
-  outline: 2px solid #667eea;
-  outline-offset: 2px;
-}
-
-@keyframes popupSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.time-input-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
 }`;

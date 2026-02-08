@@ -12,7 +12,8 @@ const BusinessHoursTimeSelector = ({
   onStartTimeChange,
   onEndTimeChange,
   disabled = false,
-  className = ''
+  className = '',
+  width = null          // CSS value for overall width (e.g. '400px', '100%'); null = 320px default
 }) => {
   const [activeSelector, setActiveSelector] = useState(null); // 'start' or 'end'
   const hoverTimeoutRef = useRef(null);
@@ -253,69 +254,97 @@ const BusinessHoursTimeSelector = ({
     <div
       ref={containerRef}
       className={`business-hours-time-selector ${className}`}
+      style={width ? { width } : undefined}
     >
-      {/* Time input buttons */}
+      {/* Time input triggers */}
       <div className="time-inputs-row">
-        <button
+        <div
           ref={startButtonRef}
-          type="button"
-          className={`time-input-button ${activeSelector === 'start' ? 'active' : ''}`}
+          className={`time-input-trigger ${activeSelector === 'start' ? 'active' : ''}`}
           onClick={() => handleButtonClick('start')}
           onMouseEnter={activeSelector === 'start' ? undefined : () => handleButtonMouseEnter('start')}
+          role="combobox"
+          aria-expanded={activeSelector === 'start'}
+          tabIndex={0}
         >
-          <span className="time-value">{formatTime12Hour(startTime) || 'Select Start'}</span>
-        </button>
+          <div className="time-input-field">
+            <span className="time-input-label">Start Time</span>
+            <input
+              type="text"
+              readOnly
+              className="time-input-value"
+              value={formatTime12Hour(startTime)}
+              placeholder="Select start"
+              tabIndex={-1}
+            />
+          </div>
+          <span className="dropdown-arrow">&#9660;</span>
+        </div>
 
-        <button
+        <span className="time-separator">to</span>
+
+        <div
           ref={endButtonRef}
-          type="button"
-          className={`time-input-button ${activeSelector === 'end' ? 'active' : ''}`}
+          className={`time-input-trigger ${activeSelector === 'end' ? 'active' : ''}`}
           onClick={() => handleButtonClick('end')}
           onMouseEnter={activeSelector === 'end' ? undefined : () => handleButtonMouseEnter('end')}
+          role="combobox"
+          aria-expanded={activeSelector === 'end'}
+          tabIndex={0}
         >
-          <span className="time-value">{formatTime12Hour(endTime) || 'Select End'}</span>
-        </button>
+          <div className="time-input-field">
+            <span className="time-input-label">End Time</span>
+            <input
+              type="text"
+              readOnly
+              className="time-input-value"
+              value={formatTime12Hour(endTime)}
+              placeholder="Select end"
+              tabIndex={-1}
+            />
+          </div>
+          <span className="dropdown-arrow">&#9660;</span>
+        </div>
       </div>
 
       {/* Grid time selector */}
       {activeSelector && (
-        <div
-          ref={popupRef}
-          className="time-selector-popup"
-          onMouseEnter={handlePopupMouseEnter}
-          style={{
-            position: 'absolute',
-            top: popupPosition.top,
-            bottom: popupPosition.bottom,
-            left: popupPosition.left,
-            right: popupPosition.right,
-            marginTop: popupPosition.marginTop,
-            marginBottom: popupPosition.marginBottom,
-            transform: popupPosition.transform
-          }}
-        >
-          <div className="popup-scroll-area">
-            <div className="popup-header">
-              <h4>Select {activeSelector === 'start' ? 'Start' : 'End'} Time</h4>
+        <>
+          {/* Backdrop for tap-to-close on touch and click-away on desktop */}
+          <div
+            className="selector-backdrop"
+            onClick={closeSelector}
+          />
+          <div
+            ref={popupRef}
+            className="time-selector-popup"
+            onMouseEnter={handlePopupMouseEnter}
+            style={{
+              position: 'absolute',
+              top: popupPosition.top,
+              bottom: popupPosition.bottom,
+              left: popupPosition.left,
+              right: popupPosition.right,
+              marginTop: popupPosition.marginTop,
+              marginBottom: popupPosition.marginBottom,
+              transform: popupPosition.transform
+            }}
+          >
+            <div className="popup-scroll-area">
+              <div className="popup-header">
+                <h4>Select {activeSelector === 'start' ? 'Start' : 'End'} Time</h4>
+              </div>
+
+              <TimeSlotGrid
+                value={activeSelector === 'start' ? startTime : endTime}
+                onChange={handleTimeChange}
+                minTime={activeSelector === 'start' ? '06:00' : startTime}
+                maxTime={activeSelector === 'end' ? '22:00' : endTime}
+                showHeader={false}
+              />
             </div>
-
-            <TimeSlotGrid
-              value={activeSelector === 'start' ? startTime : endTime}
-              onChange={handleTimeChange}
-              minTime={activeSelector === 'start' ? '06:00' : startTime}
-              maxTime={activeSelector === 'end' ? '22:00' : endTime}
-              showHeader={false}
-            />
           </div>
-        </div>
-      )}
-
-      {/* Backdrop to close popup — touch devices only; desktop uses mouse tracking */}
-      {activeSelector && isTouchDevice() && (
-        <div
-          className="selector-backdrop"
-          onClick={closeSelector}
-        />
+        </>
       )}
     </div>
   );

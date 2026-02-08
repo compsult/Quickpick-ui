@@ -5,7 +5,7 @@ import { timeSlotGridCSS, businessHoursCSS } from './all-styles';
 
 class QuickpickHours extends HTMLElement {
   static get observedAttributes() {
-    return ['start-time', 'end-time', 'disabled'];
+    return ['start-time', 'end-time', 'disabled', 'width'];
   }
 
   constructor() {
@@ -54,6 +54,10 @@ class QuickpickHours extends HTMLElement {
 
     // disabled (boolean attribute)
     props.disabled = this.hasAttribute('disabled');
+
+    // width
+    const w = this.getAttribute('width');
+    if (w) props.width = w;
 
     // Callbacks: emit CustomEvents
     props.onStartTimeChange = (time) => {
