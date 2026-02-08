@@ -5,7 +5,7 @@ import { timeSlotGridCSS, appointmentCSS } from './all-styles';
 
 class QuickpickAppointment extends HTMLElement {
   static get observedAttributes() {
-    return ['selected-time', 'selected-date', 'business-hours', 'disabled', 'popup-width', 'data', 'selected-value', 'placeholder', 'columns'];
+    return ['selected-time', 'selected-date', 'business-hours', 'disabled', 'popup-width', 'data', 'selected-value', 'placeholder', 'columns', 'label'];
   }
 
   constructor() {
@@ -141,6 +141,10 @@ class QuickpickAppointment extends HTMLElement {
 
     // disabled (boolean attribute — applies to both modes)
     props.disabled = this.hasAttribute('disabled');
+
+    // label (applies to both modes)
+    const lbl = this.getAttribute('label');
+    if (lbl) props.label = lbl;
 
     // popup-width applies to both modes
     if (!items) {

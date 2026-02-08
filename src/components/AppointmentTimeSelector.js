@@ -17,7 +17,8 @@ const AppointmentTimeSelector = ({
   items = null,
   selectedValue = null,
   placeholder = null,
-  columns = null
+  columns = null,
+  label = null
 }) => {
   const [isGridOpen, setIsGridOpen] = useState(false);
   const hoverTimeoutRef = useRef(null);
@@ -275,22 +276,34 @@ const AppointmentTimeSelector = ({
       ref={containerRef}
       className={`appointment-time-selector ${className}`}
     >
-      <button
+      <div
         ref={buttonRef}
-        type="button"
-        className={`time-selector-button ${isGridOpen ? 'active' : ''}`}
+        className={`time-selector-trigger ${isGridOpen ? 'active' : ''}`}
         onClick={handleButtonClick}
         onMouseEnter={isGridOpen ? undefined : handleButtonMouseEnter}
+        role="combobox"
+        aria-expanded={isGridOpen}
+        tabIndex={0}
       >
-        <span className={`time-value${(isItemsMode ? selectedValue : selectedTime) ? '' : ' placeholder'}`}>
-          {isItemsMode
-            ? (selectedValue
-              ? (items.find(i => i.value === selectedValue) || {}).label || selectedValue
-              : (placeholder || 'Select an option'))
-            : (selectedTime ? formatTime12Hour(selectedTime) : `Select${selectedDate ? ' ' + selectedDate.toLocaleDateString('en-US', { weekday: 'long' }) : ''} time`)}
-        </span>
+        <div className="time-selector-field">
+          {label && <span className="time-selector-label">{label}</span>}
+          <input
+            type="text"
+            readOnly
+            className="time-selector-input"
+            value={isItemsMode
+              ? (selectedValue
+                ? (items.find(i => i.value === selectedValue) || {}).label || selectedValue
+                : '')
+              : (selectedTime ? formatTime12Hour(selectedTime) : '')}
+            placeholder={isItemsMode
+              ? (placeholder || 'Select an option')
+              : `Select${selectedDate ? ' ' + selectedDate.toLocaleDateString('en-US', { weekday: 'long' }) : ''} time`}
+            tabIndex={-1}
+          />
+        </div>
         <span className="dropdown-arrow">&#9660;</span>
-      </button>
+      </div>
 
       {isGridOpen && (
         <>

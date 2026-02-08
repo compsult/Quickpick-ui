@@ -231,113 +231,118 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
   display: inline-block;
 }
 
-.time-selector-button {
+/* Trigger — underlined input with tappable area */
+.time-selector-trigger {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: auto;
-  padding: 10px 16px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
+  align-items: flex-end;
+  gap: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 14px;
-  min-width: 320px;
+  min-width: 200px;
   max-width: 450px;
-  position: relative;
-  overflow: hidden;
-  pointer-events: auto;
+  padding: 8px 12px 6px;
+  background: #f8fafc;
+  border-radius: 6px 6px 0 0;
+  transition: background 0.2s ease;
   touch-action: manipulation;
   -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
 }
 
-.time-selector-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.08), transparent);
-  transition: left 0.5s ease;
+.time-selector-trigger:hover {
+  background: #f1f5f9;
 }
 
-.time-selector-button * {
+.time-selector-trigger.active {
+  background: #eff6ff;
+}
+
+/* Disable mouse events on children to prevent interference */
+.time-selector-trigger * {
   pointer-events: none;
 }
 
-.time-selector-button:hover {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-color: #3b82f6;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-}
-
-.time-selector-button:hover::before {
-  left: 100%;
-}
-
-.time-selector-button.active {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  border-color: #1d4ed8;
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
-}
-
-.time-selector-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
-}
-
-.time-label {
-  font-weight: 500;
-  color: #374151;
-  position: relative;
-  z-index: 1;
-}
-
-.time-selector-button.active .time-label {
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.appointment-time-selector .time-value {
-  font-weight: 600;
-  font-size: 16px;
-  color: #1f2937;
+/* Field wrapper — stacks label above input */
+.time-selector-field {
   flex: 1;
-  text-align: center;
-  position: relative;
-  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-.appointment-time-selector .time-value.placeholder {
-  color: #4b5563;
+/* Persistent label above the input */
+.time-selector-label {
+  font-size: 12px;
   font-weight: 500;
+  color: #64748b;
+  margin-bottom: 2px;
+  transition: color 0.2s ease;
+  line-height: 1;
 }
 
-.time-selector-button.active .time-value {
-  color: white;
+.time-selector-trigger.active .time-selector-label {
+  color: #3b82f6;
 }
 
-.time-selector-button.active .time-value.placeholder {
-  color: rgba(255, 255, 255, 0.7);
+/* The readonly text input */
+.time-selector-input {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #cbd5e1;
+  background: transparent;
+  padding: 6px 0;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #1f2937;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  min-width: 0;
 }
 
+.time-selector-input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.time-selector-trigger:hover .time-selector-input {
+  border-bottom-color: #3b82f6;
+}
+
+.time-selector-trigger.active .time-selector-input {
+  border-bottom-color: #3b82f6;
+}
+
+.time-selector-trigger:focus {
+  outline: none;
+}
+
+.time-selector-trigger:focus .time-selector-input {
+  border-bottom-color: #3b82f6;
+}
+
+.time-selector-trigger:focus .time-selector-label {
+  color: #3b82f6;
+}
+
+/* Dropdown arrow */
 .dropdown-arrow {
   font-size: 12px;
-  color: #6b7280;
-  transition: transform 0.2s ease;
-  position: relative;
-  z-index: 1;
+  color: #94a3b8;
+  transition: transform 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+  padding-bottom: 8px;
 }
 
-.time-selector-button.active .dropdown-arrow {
+.time-selector-trigger.active .dropdown-arrow {
   transform: rotate(180deg);
-  color: rgba(255, 255, 255, 0.85);
+  color: #3b82f6;
 }
 
+.time-selector-trigger:hover .dropdown-arrow {
+  color: #3b82f6;
+}
+
+/* Time grid popup — outer shell with border/shadow, clips content */
 .time-grid-popup {
   position: absolute;
   background: white;
@@ -387,6 +392,7 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
   min-width: 0;
 }
 
+/* Sticky header */
 .appointment-time-selector .popup-header {
   display: flex;
   justify-content: space-between;
@@ -409,6 +415,7 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Backdrop */
 .selector-backdrop {
   position: fixed;
   top: 0;
@@ -424,6 +431,10 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
   .selector-backdrop {
     background: rgba(0, 0, 0, 0.15);
   }
+  .time-selector-trigger {
+    background: #f1f5f9;
+    padding: 10px 14px 8px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -437,8 +448,11 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
     max-width: 350px;
     margin-top: 0;
   }
-  .time-selector-button {
+  .time-selector-trigger {
     min-width: 150px;
+  }
+  .dropdown-arrow {
+    font-size: 14px;
   }
 }
 
@@ -447,20 +461,24 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
     width: 95vw;
     max-width: none;
   }
-  .time-selector-button {
-    font-size: 16px;
-    padding: 14px 12px;
-    min-height: 48px;
+  .time-selector-trigger {
     min-width: 100%;
+    padding: 10px 14px 8px;
+  }
+  .time-selector-input {
+    font-size: 16px;
+    padding: 8px 0;
+    min-height: 44px;
+  }
+  .dropdown-arrow {
+    font-size: 16px;
+  }
+  .time-selector-label {
+    font-size: 13px;
   }
   .popup-header {
     padding: 14px 16px;
   }
-}
-
-.time-selector-button:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
 }`;
 
 export const businessHoursCSS = `/* Business Hours Time Selector Styles */

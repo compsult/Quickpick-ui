@@ -37,20 +37,20 @@ describe('AppointmentTimeSelector — time mode', () => {
 
   beforeEach(() => jest.clearAllMocks());
 
-  test('renders placeholder with day name when no time selected', () => {
+  test('renders placeholder in input when no time selected', () => {
     render(<AppointmentTimeSelector {...defaultProps} />);
-    expect(screen.getByText('Select Monday time')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Select Monday time')).toBeInTheDocument();
   });
 
-  test('renders formatted time when selected', () => {
+  test('renders formatted time in input when selected', () => {
     render(<AppointmentTimeSelector {...defaultProps} selectedTime="14:30" />);
-    expect(screen.getByText('2:30 PM')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('2:30 PM')).toBeInTheDocument();
   });
 
-  test('opens popup grid on button click', async () => {
+  test('opens popup grid on click', async () => {
     const user = userEvent.setup({});
     render(<AppointmentTimeSelector {...defaultProps} />);
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('combobox'));
     // Grid should be visible with time slots
     expect(screen.getByText('9AM')).toBeInTheDocument();
   });
@@ -60,7 +60,7 @@ describe('AppointmentTimeSelector — time mode', () => {
     const handleChange = jest.fn();
     render(<AppointmentTimeSelector {...defaultProps} onTimeChange={handleChange} />);
     // Open popup
-    await user.click(screen.getByRole('button', { name: /select/i }));
+    await user.click(screen.getByRole('combobox'));
     // Click a time slot
     await user.click(screen.getByLabelText('Select 9AM'));
     expect(handleChange).toHaveBeenCalledWith('09:00');
@@ -78,13 +78,19 @@ describe('AppointmentTimeSelector — time mode', () => {
     expect(container.querySelector('.dropdown-arrow')).toBeInTheDocument();
   });
 
-  test('button gets active class when popup is open', async () => {
+  test('trigger gets active class when popup is open', async () => {
     const user = userEvent.setup({});
     const { container } = render(<AppointmentTimeSelector {...defaultProps} />);
-    const button = container.querySelector('.time-selector-button');
-    expect(button).not.toHaveClass('active');
-    await user.click(button);
-    expect(container.querySelector('.time-selector-button')).toHaveClass('active');
+    const trigger = container.querySelector('.time-selector-trigger');
+    expect(trigger).not.toHaveClass('active');
+    await user.click(trigger);
+    expect(container.querySelector('.time-selector-trigger')).toHaveClass('active');
+  });
+
+  test('input is readonly', () => {
+    render(<AppointmentTimeSelector {...defaultProps} />);
+    const input = screen.getByPlaceholderText('Select Monday time');
+    expect(input).toHaveAttribute('readonly');
   });
 });
 
@@ -106,30 +112,30 @@ describe('AppointmentTimeSelector — items mode', () => {
 
   beforeEach(() => jest.clearAllMocks());
 
-  test('renders placeholder when no value selected', () => {
+  test('renders placeholder in input when no value selected', () => {
     render(<AppointmentTimeSelector {...defaultProps} />);
-    expect(screen.getByText('Choose a state')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Choose a state')).toBeInTheDocument();
   });
 
   test('renders default placeholder when none provided', () => {
     render(<AppointmentTimeSelector items={items} onTimeChange={jest.fn()} />);
-    expect(screen.getByText('Select an option')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Select an option')).toBeInTheDocument();
   });
 
-  test('renders selected item label on button', () => {
+  test('renders selected item label in input', () => {
     render(<AppointmentTimeSelector {...defaultProps} selectedValue="NY" />);
-    expect(screen.getByText('New York')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('New York')).toBeInTheDocument();
   });
 
   test('falls back to value string if not found in items', () => {
     render(<AppointmentTimeSelector {...defaultProps} selectedValue="ZZ" />);
-    expect(screen.getByText('ZZ')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('ZZ')).toBeInTheDocument();
   });
 
   test('opens popup showing items on click', async () => {
     const user = userEvent.setup({});
     render(<AppointmentTimeSelector {...defaultProps} />);
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('combobox'));
     expect(screen.getByText('California')).toBeInTheDocument();
     expect(screen.getByText('New York')).toBeInTheDocument();
     expect(screen.getByText('Texas')).toBeInTheDocument();
@@ -139,7 +145,7 @@ describe('AppointmentTimeSelector — items mode', () => {
     const user = userEvent.setup({});
     const handleChange = jest.fn();
     render(<AppointmentTimeSelector {...defaultProps} onTimeChange={handleChange} />);
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('combobox'));
     await user.click(screen.getByText('Texas'));
     expect(handleChange).toHaveBeenCalledWith({ value: 'TX', label: 'Texas' });
   });
@@ -147,7 +153,7 @@ describe('AppointmentTimeSelector — items mode', () => {
   test('closes popup after item selection', async () => {
     const user = userEvent.setup({});
     render(<AppointmentTimeSelector {...defaultProps} />);
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('combobox'));
     await user.click(screen.getByText('California'));
     // Popup should close
     expect(screen.queryByText('New York')).not.toBeInTheDocument();
@@ -158,20 +164,85 @@ describe('AppointmentTimeSelector — items mode', () => {
     const { container } = render(
       <AppointmentTimeSelector {...defaultProps} columns={3} />
     );
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('combobox'));
     const row = container.querySelector('.time-row');
     expect(row.style.gridTemplateColumns).toBe('repeat(3, minmax(0, 1fr))');
   });
 
-  test('button shows placeholder style when no value selected', () => {
-    const { container } = render(<AppointmentTimeSelector {...defaultProps} />);
-    expect(container.querySelector('.time-value')).toHaveClass('placeholder');
+  test('input has empty value when no selection', () => {
+    render(<AppointmentTimeSelector {...defaultProps} />);
+    const input = screen.getByPlaceholderText('Choose a state');
+    expect(input.value).toBe('');
   });
 
-  test('button does not show placeholder style when value selected', () => {
-    const { container } = render(
-      <AppointmentTimeSelector {...defaultProps} selectedValue="CA" />
+  test('input has selected value when selection made', () => {
+    render(<AppointmentTimeSelector {...defaultProps} selectedValue="CA" />);
+    const input = screen.getByDisplayValue('California');
+    expect(input.value).toBe('California');
+  });
+});
+
+// ─── Label prop ──────────────────────────────────────────────────
+
+describe('AppointmentTimeSelector — label prop', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test('renders label text above input in time mode', () => {
+    render(
+      <AppointmentTimeSelector
+        selectedTime={null}
+        onTimeChange={jest.fn()}
+        selectedDate={new Date(2026, 1, 9)}
+        businessHours={{ monday: { enabled: true, start: '09:00', end: '10:00' } }}
+        label="Appointment Time"
+      />
     );
-    expect(container.querySelector('.time-value')).not.toHaveClass('placeholder');
+    expect(screen.getByText('Appointment Time')).toBeInTheDocument();
+    expect(screen.getByText('Appointment Time').className).toBe('time-selector-label');
+  });
+
+  test('renders label text above input in items mode', () => {
+    const items = [
+      { value: 'CA', label: 'California' },
+      { value: 'NY', label: 'New York' },
+    ];
+    render(
+      <AppointmentTimeSelector
+        items={items}
+        onTimeChange={jest.fn()}
+        placeholder="Choose a state"
+        label="US State"
+      />
+    );
+    expect(screen.getByText('US State')).toBeInTheDocument();
+    expect(screen.getByText('US State').className).toBe('time-selector-label');
+  });
+
+  test('does not render label when prop is not provided', () => {
+    const { container } = render(
+      <AppointmentTimeSelector
+        selectedTime={null}
+        onTimeChange={jest.fn()}
+        selectedDate={new Date(2026, 1, 9)}
+        businessHours={{ monday: { enabled: true, start: '09:00', end: '10:00' } }}
+      />
+    );
+    expect(container.querySelector('.time-selector-label')).not.toBeInTheDocument();
+  });
+
+  test('label is inside the field wrapper', () => {
+    const { container } = render(
+      <AppointmentTimeSelector
+        selectedTime={null}
+        onTimeChange={jest.fn()}
+        selectedDate={new Date(2026, 1, 9)}
+        businessHours={{ monday: { enabled: true, start: '09:00', end: '10:00' } }}
+        label="Test Label"
+      />
+    );
+    const field = container.querySelector('.time-selector-field');
+    expect(field).toBeInTheDocument();
+    expect(field.querySelector('.time-selector-label')).toBeInTheDocument();
+    expect(field.querySelector('.time-selector-input')).toBeInTheDocument();
   });
 });

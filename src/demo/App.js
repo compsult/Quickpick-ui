@@ -105,6 +105,7 @@ function App() {
                 onTimeChange={setAppointmentTime}
                 selectedDate={new Date()}
                 businessHours={businessHours}
+                label="Appointment Time"
               />
             </div>
             <div className="demo-info">
@@ -279,6 +280,7 @@ export default function BookPage({ businessHours }) {
                 selectedValue={selectedState}
                 onTimeChange={(item) => setSelectedState(item.value)}
                 placeholder="Choose a state"
+                label="US State"
               />
             </div>
             <div className="demo-info">
@@ -310,6 +312,7 @@ export default function BookPage({ businessHours }) {
                 selectedValue={selectedColor}
                 onTimeChange={(item) => setSelectedColor(item.value)}
                 placeholder="Choose a color"
+                label="Favorite Color"
               />
             </div>
             <div className="demo-info">
@@ -333,6 +336,7 @@ export default function BookPage({ businessHours }) {
                 selectedValue={selectedService}
                 onTimeChange={(item) => setSelectedService(item.value)}
                 placeholder="Choose a service"
+                label="Service Type"
               />
             </div>
             <div className="demo-info">
