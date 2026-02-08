@@ -16,11 +16,16 @@ const BusinessHoursTimeSelector = ({
   width = null          // CSS value for overall width (e.g. '400px', '100%'); null = 320px default
 }) => {
   const [activeSelector, setActiveSelector] = useState(null); // 'start' or 'end'
+  const [filterText, setFilterText] = useState('');
+  const [inputFocused, setInputFocused] = useState(false);
   const hoverTimeoutRef = useRef(null);
   const containerRef = useRef(null);
   const popupRef = useRef(null);
   const startButtonRef = useRef(null);
   const endButtonRef = useRef(null);
+  const startInputRef = useRef(null);
+  const endInputRef = useRef(null);
+  const inputFocusedRef = useRef(false);    // ref copy for mouse-tracking interval
   const mouseTrackingIntervalRef = useRef(null);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
   const [popupPosition, setPopupPosition] = useState({ top: '100%', left: '0', transform: 'none' });
@@ -34,6 +39,38 @@ const BusinessHoursTimeSelector = ({
     return minute === 0 ? `${hour12} ${ampm}` : `${hour12}:${minuteStr} ${ampm}`;
   };
 
+  // Clear filter when popup closes or switches
+  useEffect(() => {
+    setFilterText('');
+  }, [activeSelector]);
+
+  // Get first matching time slot for Enter key
+  const getFirstMatch = useCallback(() => {
+    if (!filterText.trim()) return null;
+    const normalized = filterText.trim().toLowerCase();
+    const currentMinTime = activeSelector === 'start' ? '06:00' : startTime;
+    const currentMaxTime = activeSelector === 'end' ? '22:00' : endTime;
+    const minHour = parseInt(currentMinTime.split(':')[0], 10);
+    const minMinute = parseInt(currentMinTime.split(':')[1], 10);
+    const maxHour = parseInt(currentMaxTime.split(':')[0], 10);
+    const maxMinute = parseInt(currentMaxTime.split(':')[1], 10);
+    const minutes = [0, 15, 30, 45];
+    for (let hour = minHour; hour <= maxHour; hour++) {
+      for (let minute of minutes) {
+        const t = hour * 60 + minute;
+        if (t < minHour * 60 + minMinute || t > maxHour * 60 + maxMinute) continue;
+        const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+        const ampm = hour < 12 ? 'AM' : 'PM';
+        const minuteStr = minute.toString().padStart(2, '0');
+        const display = (minute === 0 ? `${hour12}${ampm}` : `${hour12}:${minuteStr}${ampm}`).toLowerCase();
+        if (display.includes(normalized)) {
+          return `${hour.toString().padStart(2, '0')}:${minuteStr}`;
+        }
+      }
+    }
+    return null;
+  }, [filterText, activeSelector, startTime, endTime]);
+
   const handleTimeChange = (newTime) => {
     if (activeSelector === 'start') {
       onStartTimeChange(newTime);
@@ -42,6 +79,10 @@ const BusinessHoursTimeSelector = ({
     }
     // Auto-close after selection
     setActiveSelector(null);
+    setFilterText('');
+    // Blur the active input
+    const activeInput = activeSelector === 'start' ? startInputRef.current : endInputRef.current;
+    if (activeInput) activeInput.blur();
     // Clear any pending timeout
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
@@ -167,6 +208,9 @@ const BusinessHoursTimeSelector = ({
   };
 
   const isMouseOverRelevantArea = useCallback((mouseX, mouseY) => {
+    // Don't auto-close while an input is focused (user is typing)
+    if (inputFocusedRef.current) return true;
+
     const popup = popupRef.current;
 
     // Check BOTH buttons — moving between them should not close the popup
@@ -270,12 +314,42 @@ const BusinessHoursTimeSelector = ({
           <div className="time-input-field">
             <span className="time-input-label">Start Time</span>
             <input
+              ref={startInputRef}
               type="text"
-              readOnly
+              readOnly={isTouchDevice()}
               className="time-input-value"
-              value={formatTime12Hour(startTime)}
+              value={inputFocused && activeSelector === 'start'
+                ? filterText
+                : formatTime12Hour(startTime)}
               placeholder="Select start"
               tabIndex={-1}
+              onClick={!isTouchDevice() ? (e) => e.stopPropagation() : undefined}
+              onMouseDown={!isTouchDevice() ? (e) => e.stopPropagation() : undefined}
+              onChange={!isTouchDevice() ? (e) => {
+                setFilterText(e.target.value);
+                if (!activeSelector) setActiveSelector('start');
+              } : undefined}
+              onFocus={!isTouchDevice() ? () => {
+                inputFocusedRef.current = true;
+                setInputFocused(true);
+                if (activeSelector !== 'start') setActiveSelector('start');
+              } : undefined}
+              onBlur={!isTouchDevice() ? () => {
+                inputFocusedRef.current = false;
+                setInputFocused(false);
+              } : undefined}
+              onKeyDown={!isTouchDevice() ? (e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  const match = getFirstMatch();
+                  if (match) handleTimeChange(match);
+                } else if (e.key === 'Escape') {
+                  e.preventDefault();
+                  setFilterText('');
+                  setActiveSelector(null);
+                  if (startInputRef.current) startInputRef.current.blur();
+                }
+              } : undefined}
             />
           </div>
           <span className="dropdown-arrow">&#9660;</span>
@@ -295,12 +369,42 @@ const BusinessHoursTimeSelector = ({
           <div className="time-input-field">
             <span className="time-input-label">End Time</span>
             <input
+              ref={endInputRef}
               type="text"
-              readOnly
+              readOnly={isTouchDevice()}
               className="time-input-value"
-              value={formatTime12Hour(endTime)}
+              value={inputFocused && activeSelector === 'end'
+                ? filterText
+                : formatTime12Hour(endTime)}
               placeholder="Select end"
               tabIndex={-1}
+              onClick={!isTouchDevice() ? (e) => e.stopPropagation() : undefined}
+              onMouseDown={!isTouchDevice() ? (e) => e.stopPropagation() : undefined}
+              onChange={!isTouchDevice() ? (e) => {
+                setFilterText(e.target.value);
+                if (!activeSelector) setActiveSelector('end');
+              } : undefined}
+              onFocus={!isTouchDevice() ? () => {
+                inputFocusedRef.current = true;
+                setInputFocused(true);
+                if (activeSelector !== 'end') setActiveSelector('end');
+              } : undefined}
+              onBlur={!isTouchDevice() ? () => {
+                inputFocusedRef.current = false;
+                setInputFocused(false);
+              } : undefined}
+              onKeyDown={!isTouchDevice() ? (e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  const match = getFirstMatch();
+                  if (match) handleTimeChange(match);
+                } else if (e.key === 'Escape') {
+                  e.preventDefault();
+                  setFilterText('');
+                  setActiveSelector(null);
+                  if (endInputRef.current) endInputRef.current.blur();
+                }
+              } : undefined}
             />
           </div>
           <span className="dropdown-arrow">&#9660;</span>
@@ -310,11 +414,13 @@ const BusinessHoursTimeSelector = ({
       {/* Grid time selector */}
       {activeSelector && (
         <>
-          {/* Backdrop for tap-to-close on touch and click-away on desktop */}
-          <div
-            className="selector-backdrop"
-            onClick={closeSelector}
-          />
+          {/* Backdrop for tap-to-close (touch only; desktop uses mouse-tracking) */}
+          {isTouchDevice() && (
+            <div
+              className="selector-backdrop"
+              onClick={closeSelector}
+            />
+          )}
           <div
             ref={popupRef}
             className="time-selector-popup"
@@ -341,6 +447,7 @@ const BusinessHoursTimeSelector = ({
                 minTime={activeSelector === 'start' ? '06:00' : startTime}
                 maxTime={activeSelector === 'end' ? '22:00' : endTime}
                 showHeader={false}
+                filterText={filterText}
               />
             </div>
           </div>

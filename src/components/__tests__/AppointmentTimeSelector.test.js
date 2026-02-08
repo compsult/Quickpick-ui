@@ -87,7 +87,7 @@ describe('AppointmentTimeSelector — time mode', () => {
     expect(container.querySelector('.time-selector-trigger')).toHaveClass('active');
   });
 
-  test('input is readonly', () => {
+  test('input is readonly on touch device', () => {
     render(<AppointmentTimeSelector {...defaultProps} />);
     const input = screen.getByPlaceholderText('Select Monday time');
     expect(input).toHaveAttribute('readonly');
@@ -244,5 +244,141 @@ describe('AppointmentTimeSelector — label prop', () => {
     expect(field).toBeInTheDocument();
     expect(field.querySelector('.time-selector-label')).toBeInTheDocument();
     expect(field.querySelector('.time-selector-input')).toBeInTheDocument();
+  });
+});
+
+// ─── Desktop combobox (typeable input with filtering) ────────────
+
+describe('AppointmentTimeSelector — desktop combobox', () => {
+  // Desktop mock: (hover: none) → false, (hover: hover) → true
+  const desktopMatchMedia = (query) => ({
+    matches: query === '(hover: hover)',
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  });
+
+  const timeProps = {
+    selectedTime: null,
+    onTimeChange: jest.fn(),
+    selectedDate: new Date(2026, 1, 9), // Monday
+    businessHours: {
+      monday: { enabled: true, start: '09:00', end: '10:00' },
+    },
+  };
+
+  const items = [
+    { value: 'CA', label: 'California' },
+    { value: 'NY', label: 'New York' },
+    { value: 'TX', label: 'Texas' },
+  ];
+
+  const itemsProps = {
+    items,
+    selectedValue: null,
+    onTimeChange: jest.fn(),
+    placeholder: 'Choose a state',
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    window.matchMedia = jest.fn().mockImplementation(desktopMatchMedia);
+  });
+
+  test('input is editable on desktop (no readonly)', () => {
+    render(<AppointmentTimeSelector {...timeProps} />);
+    const input = screen.getByPlaceholderText('Select Monday time');
+    expect(input).not.toHaveAttribute('readonly');
+  });
+
+  test('typing in input opens popup and filters items', async () => {
+    const user = userEvent.setup();
+    render(<AppointmentTimeSelector {...itemsProps} />);
+    const input = screen.getByPlaceholderText('Choose a state');
+    await user.click(input);
+    await user.type(input, 'tex');
+    // Popup should be open with only Texas showing
+    expect(screen.getByText('Texas')).toBeInTheDocument();
+    expect(screen.queryByText('California')).not.toBeInTheDocument();
+    expect(screen.queryByText('New York')).not.toBeInTheDocument();
+  });
+
+  test('typing in time mode filters time slots', async () => {
+    const user = userEvent.setup();
+    render(<AppointmentTimeSelector {...timeProps} />);
+    const input = screen.getByPlaceholderText('Select Monday time');
+    await user.click(input);
+    await user.type(input, '9:3');
+    // Should show 9:30AM but not 9AM, 9:15AM, 9:45AM
+    expect(screen.getByText('9:30AM')).toBeInTheDocument();
+    expect(screen.queryByText('9AM')).not.toBeInTheDocument();
+  });
+
+  test('Enter key selects first filtered match in items mode', async () => {
+    const user = userEvent.setup();
+    const handleChange = jest.fn();
+    render(<AppointmentTimeSelector {...itemsProps} onTimeChange={handleChange} />);
+    const input = screen.getByPlaceholderText('Choose a state');
+    await user.click(input);
+    await user.type(input, 'tex');
+    await user.keyboard('{Enter}');
+    expect(handleChange).toHaveBeenCalledWith({ value: 'TX', label: 'Texas' });
+  });
+
+  test('Enter key selects first filtered match in time mode', async () => {
+    const user = userEvent.setup();
+    const handleChange = jest.fn();
+    render(<AppointmentTimeSelector {...timeProps} onTimeChange={handleChange} />);
+    const input = screen.getByPlaceholderText('Select Monday time');
+    await user.click(input);
+    await user.type(input, '9:3');
+    await user.keyboard('{Enter}');
+    expect(handleChange).toHaveBeenCalledWith('09:30');
+  });
+
+  test('Escape key closes popup and clears filter', async () => {
+    const user = userEvent.setup();
+    render(<AppointmentTimeSelector {...itemsProps} />);
+    const input = screen.getByPlaceholderText('Choose a state');
+    await user.click(input);
+    await user.type(input, 'cal');
+    expect(screen.getByText('California')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    // Popup should close
+    expect(screen.queryByText('California')).not.toBeInTheDocument();
+  });
+
+  test('filter text clears when popup closes via selection', async () => {
+    const user = userEvent.setup();
+    render(<AppointmentTimeSelector {...itemsProps} />);
+    const input = screen.getByPlaceholderText('Choose a state');
+    await user.click(input);
+    await user.type(input, 'tex');
+    await user.click(screen.getByText('Texas'));
+    // After selection, popup closes and filter is cleared
+    // Input should not show filter text
+    expect(input.value).not.toBe('tex');
+  });
+
+  test('shows "No matches" when filter produces zero results in items mode', async () => {
+    const user = userEvent.setup();
+    render(<AppointmentTimeSelector {...itemsProps} />);
+    const input = screen.getByPlaceholderText('Choose a state');
+    await user.click(input);
+    await user.type(input, 'zzz');
+    expect(screen.getByText('No matches')).toBeInTheDocument();
+  });
+
+  test('shows "No matches" when filter produces zero results in time mode', async () => {
+    const user = userEvent.setup();
+    render(<AppointmentTimeSelector {...timeProps} />);
+    const input = screen.getByPlaceholderText('Select Monday time');
+    await user.click(input);
+    await user.type(input, 'zzz');
+    expect(screen.getByText('No matches')).toBeInTheDocument();
   });
 });

@@ -11,7 +11,8 @@ const TimeSlotGrid = ({
   showHeader = true,
   items = null,
   columns = null,
-  selectedValue = null
+  selectedValue = null,
+  filterText = ''
 }) => {
   // --- Generic items mode ---
   if (items && items.length > 0) {
@@ -152,7 +153,24 @@ const TimeSlotGrid = ({
   };
 
   const groupedSlots = groupSlotsByHour();
-  const hours = Object.keys(groupedSlots).map(Number).sort((a, b) => a - b);
+  let hours = Object.keys(groupedSlots).map(Number).sort((a, b) => a - b);
+
+  // Filter time slots by filterText when provided
+  const normalizedFilter = filterText.trim().toLowerCase();
+  let filteredGroupedSlots = groupedSlots;
+  if (normalizedFilter) {
+    filteredGroupedSlots = {};
+    hours.forEach(hour => {
+      const matchingMinutes = groupedSlots[hour].filter(minute => {
+        const display = formatTime12(hour, minute).toLowerCase();
+        return display.includes(normalizedFilter);
+      });
+      if (matchingMinutes.length > 0) {
+        filteredGroupedSlots[hour] = matchingMinutes;
+      }
+    });
+    hours = Object.keys(filteredGroupedSlots).map(Number).sort((a, b) => a - b);
+  }
 
   if (disabled) {
     return (
@@ -162,13 +180,25 @@ const TimeSlotGrid = ({
     );
   }
 
+  if (normalizedFilter && hours.length === 0) {
+    return (
+      <div className={`time-slot-grid ${className}`}>
+        <div className="grid-body">
+          <div style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
+            No matches
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`time-slot-grid ${className}`}>
       {/* Time slot grid - no headers, just the grid */}
       <div className="grid-body">
         {hours.map((hour, hourIndex) => {
-          const availableMinutes = groupedSlots[hour];
-          const allMinutes = [0, 15, 30, 45];
+          const availableMinutes = filteredGroupedSlots[hour];
+          const allMinutes = normalizedFilter ? availableMinutes : [0, 15, 30, 45];
           const isEvenRow = hourIndex % 2 === 0;
 
           return (

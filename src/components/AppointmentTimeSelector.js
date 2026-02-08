@@ -22,10 +22,14 @@ const AppointmentTimeSelector = ({
   label = null
 }) => {
   const [isGridOpen, setIsGridOpen] = useState(false);
+  const [filterText, setFilterText] = useState('');
+  const [inputFocused, setInputFocused] = useState(false);
   const hoverTimeoutRef = useRef(null);
   const containerRef = useRef(null);
   const popupRef = useRef(null);
   const buttonRef = useRef(null);
+  const inputRef = useRef(null);
+  const inputFocusedRef = useRef(false);    // ref copy for mouse-tracking interval
   const mouseTrackingIntervalRef = useRef(null);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
   // Build default position based on popupWidth mode
@@ -72,10 +76,57 @@ const AppointmentTimeSelector = ({
 
   const isItemsMode = items && items.length > 0;
 
+  // Clear filter when popup closes
+  useEffect(() => {
+    if (!isGridOpen) {
+      setFilterText('');
+    }
+  }, [isGridOpen]);
+
+  // Get filtered items for items mode
+  const getFilteredItems = useCallback(() => {
+    if (!isItemsMode || !filterText.trim()) return items;
+    const normalized = filterText.trim().toLowerCase();
+    return items.filter(item => item.label.toLowerCase().includes(normalized));
+  }, [isItemsMode, items, filterText]);
+
+  // Get first matching result for Enter key
+  const getFirstMatch = useCallback(() => {
+    if (isItemsMode) {
+      const filtered = getFilteredItems();
+      return filtered.length > 0 ? filtered[0] : null;
+    }
+    // Time mode: find first slot matching filter
+    if (!filterText.trim()) return null;
+    const normalized = filterText.trim().toLowerCase();
+    const minHour = minTime.split(':').map(Number)[0];
+    const minMinute = minTime.split(':').map(Number)[1];
+    const maxHour = maxTime.split(':').map(Number)[0];
+    const maxMinute = maxTime.split(':').map(Number)[1];
+    const minutes = [0, 15, 30, 45];
+    for (let hour = minHour; hour <= maxHour; hour++) {
+      for (let minute of minutes) {
+        const t = hour * 60 + minute;
+        if (t < minHour * 60 + minMinute || t > maxHour * 60 + maxMinute) continue;
+        const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+        const ampm = hour < 12 ? 'AM' : 'PM';
+        const minuteStr = minute.toString().padStart(2, '0');
+        const display = (minute === 0 ? `${hour12}${ampm}` : `${hour12}:${minuteStr}${ampm}`).toLowerCase();
+        if (display.includes(normalized)) {
+          return `${hour.toString().padStart(2, '0')}:${minuteStr}`;
+        }
+      }
+    }
+    return null;
+  }, [isItemsMode, getFilteredItems, filterText, minTime, maxTime]);
+
   const handleTimeSelect = (newTime) => {
     onTimeChange(newTime);
     // Auto-close after selection
     setIsGridOpen(false);
+    setFilterText('');
+    // Blur input after selection
+    if (inputRef.current) inputRef.current.blur();
     // Clear any pending timeout
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
@@ -191,6 +242,9 @@ const AppointmentTimeSelector = ({
   };
 
   const isMouseOverRelevantArea = useCallback((mouseX, mouseY) => {
+    // Don't auto-close while the input is focused (user is typing)
+    if (inputFocusedRef.current) return true;
+
     const button = buttonRef.current;
     const popup = popupRef.current;
 
@@ -290,18 +344,48 @@ const AppointmentTimeSelector = ({
         <div className="time-selector-field">
           {label && <span className="time-selector-label">{label}</span>}
           <input
+            ref={inputRef}
             type="text"
-            readOnly
+            readOnly={isTouchDevice()}
             className="time-selector-input"
-            value={isItemsMode
-              ? (selectedValue
-                ? (items.find(i => i.value === selectedValue) || {}).label || selectedValue
-                : '')
-              : (selectedTime ? formatTime12Hour(selectedTime) : '')}
+            value={inputFocused
+              ? filterText
+              : isItemsMode
+                ? (selectedValue
+                  ? (items.find(i => i.value === selectedValue) || {}).label || selectedValue
+                  : '')
+                : (selectedTime ? formatTime12Hour(selectedTime) : '')}
             placeholder={isItemsMode
               ? (placeholder || 'Select an option')
               : `Select${selectedDate ? ' ' + selectedDate.toLocaleDateString('en-US', { weekday: 'long' }) : ''} time`}
             tabIndex={-1}
+            onClick={!isTouchDevice() ? (e) => e.stopPropagation() : undefined}
+            onMouseDown={!isTouchDevice() ? (e) => e.stopPropagation() : undefined}
+            onChange={!isTouchDevice() ? (e) => {
+              setFilterText(e.target.value);
+              if (!isGridOpen) setIsGridOpen(true);
+            } : undefined}
+            onFocus={!isTouchDevice() ? () => {
+              inputFocusedRef.current = true;
+              setInputFocused(true);
+              if (!isGridOpen) setIsGridOpen(true);
+            } : undefined}
+            onBlur={!isTouchDevice() ? () => {
+              inputFocusedRef.current = false;
+              setInputFocused(false);
+            } : undefined}
+            onKeyDown={!isTouchDevice() ? (e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const match = getFirstMatch();
+                if (match) handleTimeSelect(match);
+              } else if (e.key === 'Escape') {
+                e.preventDefault();
+                setFilterText('');
+                setIsGridOpen(false);
+                if (inputRef.current) inputRef.current.blur();
+              }
+            } : undefined}
           />
         </div>
         <span className="dropdown-arrow">&#9660;</span>
@@ -309,11 +393,13 @@ const AppointmentTimeSelector = ({
 
       {isGridOpen && (
         <>
-          {/* Backdrop for tap-to-close on touch and click-away on desktop */}
-          <div
-            className="selector-backdrop"
-            onClick={handleBackdropClose}
-          />
+          {/* Backdrop for tap-to-close (touch only; desktop uses mouse-tracking) */}
+          {isTouchDevice() && (
+            <div
+              className="selector-backdrop"
+              onClick={handleBackdropClose}
+            />
+          )}
           <div
             ref={popupRef}
             className={`time-grid-popup ${(width || popupWidth !== 'auto') ? 'popup-stretch' : 'popup-auto'}`}
@@ -329,17 +415,24 @@ const AppointmentTimeSelector = ({
             }}
           >
             <div className="popup-scroll-area">
-              <TimeSlotGrid
-                value={selectedTime}
-                onChange={handleTimeSelect}
-                minTime={minTime}
-                maxTime={maxTime}
-                showHeader={false}
-                className="appointment-grid"
-                items={items}
-                columns={columns}
-                selectedValue={selectedValue}
-              />
+              {isItemsMode && getFilteredItems().length === 0 ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
+                  No matches
+                </div>
+              ) : (
+                <TimeSlotGrid
+                  value={selectedTime}
+                  onChange={handleTimeSelect}
+                  minTime={minTime}
+                  maxTime={maxTime}
+                  showHeader={false}
+                  className="appointment-grid"
+                  items={isItemsMode ? getFilteredItems() : items}
+                  columns={columns}
+                  selectedValue={selectedValue}
+                  filterText={isItemsMode ? '' : filterText}
+                />
+              )}
             </div>
           </div>
         </>

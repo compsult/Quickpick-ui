@@ -195,3 +195,53 @@ describe('TimeSlotGrid — items mode', () => {
     expect(screen.getByText('9AM')).toBeInTheDocument();
   });
 });
+
+// ─── filterText prop (time mode filtering) ──────────────────────
+
+describe('TimeSlotGrid — filterText prop', () => {
+  test('filters time slots by display text', () => {
+    render(
+      <TimeSlotGrid value={null} onChange={() => {}} minTime="09:00" maxTime="10:00" filterText="9:30" />
+    );
+    expect(screen.getByText('9:30AM')).toBeInTheDocument();
+    expect(screen.queryByText('9AM')).not.toBeInTheDocument();
+    expect(screen.queryByText('9:15AM')).not.toBeInTheDocument();
+    expect(screen.queryByText('9:45AM')).not.toBeInTheDocument();
+  });
+
+  test('filters case-insensitively', () => {
+    render(
+      <TimeSlotGrid value={null} onChange={() => {}} minTime="09:00" maxTime="10:00" filterText="am" />
+    );
+    // All time slots contain "AM", so all should still be visible
+    const buttons = screen.getAllByRole('button').filter(b => !b.disabled);
+    expect(buttons.length).toBeGreaterThan(0);
+  });
+
+  test('shows "No matches" when filter produces zero results', () => {
+    render(
+      <TimeSlotGrid value={null} onChange={() => {}} minTime="09:00" maxTime="10:00" filterText="zzz" />
+    );
+    expect(screen.getByText('No matches')).toBeInTheDocument();
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
+  });
+
+  test('shows all slots when filterText is empty', () => {
+    render(
+      <TimeSlotGrid value={null} onChange={() => {}} minTime="09:00" maxTime="10:00" filterText="" />
+    );
+    const buttons = screen.getAllByRole('button').filter(b => !b.disabled);
+    expect(buttons).toHaveLength(5); // 9:00, 9:15, 9:30, 9:45, 10:00
+  });
+
+  test('filterText does not affect items mode', () => {
+    const items = [
+      { value: 'a', label: 'Alpha' },
+      { value: 'b', label: 'Beta' },
+    ];
+    render(<TimeSlotGrid items={items} onChange={() => {}} filterText="zzz" />);
+    // Items mode ignores filterText — all items shown
+    expect(screen.getByText('Alpha')).toBeInTheDocument();
+    expect(screen.getByText('Beta')).toBeInTheDocument();
+  });
+});

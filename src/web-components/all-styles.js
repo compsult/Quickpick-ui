@@ -261,6 +261,14 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
   pointer-events: none;
 }
 
+/* Desktop: re-enable pointer-events on the input so it is typeable */
+@media (hover: hover) {
+  .time-selector-trigger .time-selector-input {
+    pointer-events: auto;
+    cursor: text;
+  }
+}
+
 /* Field wrapper — stacks label above input */
 .time-selector-field {
   flex: 1;
@@ -547,6 +555,14 @@ export const businessHoursCSS = `/* Business Hours Time Selector Styles */
 
 .time-input-trigger * {
   pointer-events: none;
+}
+
+/* Desktop: re-enable pointer-events on the input so it is typeable */
+@media (hover: hover) {
+  .time-input-trigger .time-input-value {
+    pointer-events: auto;
+    cursor: text;
+  }
 }
 
 .time-input-field {

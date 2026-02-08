@@ -67,6 +67,14 @@
   pointer-events: none;
 }
 
+/* Desktop: re-enable pointer-events on the input so it is typeable */
+@media (hover: hover) {
+  .time-input-trigger .time-input-value {
+    pointer-events: auto;
+    cursor: text;
+  }
+}
+
 /* Field wrapper — stacks label above input */
 .time-input-field {
   flex: 1;
