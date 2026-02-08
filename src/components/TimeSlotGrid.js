@@ -8,8 +8,74 @@ const TimeSlotGrid = ({
   maxTime = '17:00',
   disabled = false,
   className = '',
-  showHeader = true
+  showHeader = true,
+  items = null,
+  columns = null,
+  selectedValue = null
 }) => {
+  // --- Generic items mode ---
+  if (items && items.length > 0) {
+    const maxLabelLen = items.reduce((max, item) => Math.max(max, item.label.length), 0);
+    const colCount = columns || (maxLabelLen <= 4 ? 4 : maxLabelLen <= 8 ? 3 : 2);
+
+    // Chunk items into rows
+    const rows = [];
+    for (let i = 0; i < items.length; i += colCount) {
+      rows.push(items.slice(i, i + colCount));
+    }
+
+    const handleItemClick = (item) => {
+      if (disabled) return;
+      onChange(item);
+    };
+
+    if (disabled) {
+      return (
+        <div className={`time-slot-grid disabled ${className}`}>
+          <div className="disabled-message">Selection unavailable</div>
+        </div>
+      );
+    }
+
+    return (
+      <div className={`time-slot-grid ${className}`}>
+        <div className="grid-body">
+          {rows.map((row, rowIndex) => {
+            const isEvenRow = rowIndex % 2 === 0;
+            return (
+              <div
+                key={rowIndex}
+                className={`time-row ${isEvenRow ? 'even-row' : 'odd-row'}`}
+                style={{ gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr))` }}
+              >
+                {row.map((item) => {
+                  const isSelected = selectedValue === item.value;
+                  return (
+                    <button
+                      key={item.value}
+                      type="button"
+                      className={`time-slot ${isSelected ? 'selected' : ''}`}
+                      onClick={() => handleItemClick(item)}
+                      title={item.label}
+                      aria-label={`Select ${item.label}`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+        <div className="scroll-indicator">
+          <span>Scroll for more</span>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Time slots mode (existing behavior) ---
+
   // Parse time string to get hour and minute
   const parseTime = (timeStr) => {
     const [hour, minute] = timeStr.split(':').map(Number);

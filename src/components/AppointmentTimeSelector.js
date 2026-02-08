@@ -13,7 +13,11 @@ const AppointmentTimeSelector = ({
   businessHours,
   disabled = false,
   className = '',
-  popupWidth = 'auto'  // 'auto' | 'match-button' | CSS value (e.g. '350px')
+  popupWidth = 'auto',  // 'auto' | 'match-button' | CSS value (e.g. '350px')
+  items = null,
+  selectedValue = null,
+  placeholder = null,
+  columns = null
 }) => {
   const [isGridOpen, setIsGridOpen] = useState(false);
   const hoverTimeoutRef = useRef(null);
@@ -63,6 +67,8 @@ const AppointmentTimeSelector = ({
   };
 
   const { minTime, maxTime } = getBusinessHoursForDate();
+
+  const isItemsMode = items && items.length > 0;
 
   const handleTimeSelect = (newTime) => {
     onTimeChange(newTime);
@@ -276,8 +282,12 @@ const AppointmentTimeSelector = ({
         onClick={handleButtonClick}
         onMouseEnter={isGridOpen ? undefined : handleButtonMouseEnter}
       >
-        <span className={`time-value${selectedTime ? '' : ' placeholder'}`}>
-          {selectedTime ? formatTime12Hour(selectedTime) : `Select${selectedDate ? ' ' + selectedDate.toLocaleDateString('en-US', { weekday: 'long' }) : ''} time`}
+        <span className={`time-value${(isItemsMode ? selectedValue : selectedTime) ? '' : ' placeholder'}`}>
+          {isItemsMode
+            ? (selectedValue
+              ? (items.find(i => i.value === selectedValue) || {}).label || selectedValue
+              : (placeholder || 'Select an option'))
+            : (selectedTime ? formatTime12Hour(selectedTime) : `Select${selectedDate ? ' ' + selectedDate.toLocaleDateString('en-US', { weekday: 'long' }) : ''} time`)}
         </span>
         <span className="dropdown-arrow">&#9660;</span>
       </button>
@@ -311,6 +321,9 @@ const AppointmentTimeSelector = ({
                 maxTime={maxTime}
                 showHeader={false}
                 className="appointment-grid"
+                items={items}
+                columns={columns}
+                selectedValue={selectedValue}
               />
             </div>
           </div>

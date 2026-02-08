@@ -71,8 +71,8 @@
 
   <h1>Quickpick Web Components</h1>
   <p class="subtitle">
-    Standalone time pickers via <code>&lt;script&gt;</code> tag &mdash; no React required.
-    Styles are fully encapsulated in Shadow DOM.
+    Standalone pickers via <code>&lt;script&gt;</code> tag &mdash; no React required.
+    Works as a time picker or a generic data grid. Styles are fully encapsulated in Shadow DOM.
   </p>
 
   <!-- ======== Appointment Time Picker ======== -->
@@ -120,8 +120,65 @@
     <div class="event-log" id="multi-log"></div>
   </div>
 
+  <!-- ======== Generic Data: JSON Array of Objects ======== -->
+  <h2>3. Generic Data &mdash; US States (JSON)</h2>
+  <div class="demo-section">
+    <label>Pick a US state:</label>
+    <quickpick-appointment
+      id="states1"
+      placeholder="Choose a state"
+      data='[{"value":"AL","label":"Alabama"},{"value":"AK","label":"Alaska"},{"value":"AZ","label":"Arizona"},{"value":"AR","label":"Arkansas"},{"value":"CA","label":"California"},{"value":"CO","label":"Colorado"},{"value":"CT","label":"Connecticut"},{"value":"DE","label":"Delaware"},{"value":"FL","label":"Florida"},{"value":"GA","label":"Georgia"},{"value":"HI","label":"Hawaii"},{"value":"ID","label":"Idaho"},{"value":"IL","label":"Illinois"},{"value":"IN","label":"Indiana"},{"value":"IA","label":"Iowa"},{"value":"KS","label":"Kansas"},{"value":"KY","label":"Kentucky"},{"value":"LA","label":"Louisiana"},{"value":"ME","label":"Maine"},{"value":"MD","label":"Maryland"},{"value":"MA","label":"Massachusetts"},{"value":"MI","label":"Michigan"},{"value":"MN","label":"Minnesota"},{"value":"MS","label":"Mississippi"},{"value":"MO","label":"Missouri"},{"value":"MT","label":"Montana"},{"value":"NE","label":"Nebraska"},{"value":"NV","label":"Nevada"},{"value":"NH","label":"New Hampshire"},{"value":"NJ","label":"New Jersey"},{"value":"NM","label":"New Mexico"},{"value":"NY","label":"New York"},{"value":"NC","label":"North Carolina"},{"value":"ND","label":"North Dakota"},{"value":"OH","label":"Ohio"},{"value":"OK","label":"Oklahoma"},{"value":"OR","label":"Oregon"},{"value":"PA","label":"Pennsylvania"},{"value":"RI","label":"Rhode Island"},{"value":"SC","label":"South Carolina"},{"value":"SD","label":"South Dakota"},{"value":"TN","label":"Tennessee"},{"value":"TX","label":"Texas"},{"value":"UT","label":"Utah"},{"value":"VT","label":"Vermont"},{"value":"VA","label":"Virginia"},{"value":"WA","label":"Washington"},{"value":"WV","label":"West Virginia"},{"value":"WI","label":"Wisconsin"},{"value":"WY","label":"Wyoming"}]'
+    ></quickpick-appointment>
+
+    <div class="event-log" id="states-log"></div>
+
+    <div class="controls">
+      <button onclick="document.getElementById('states1').setAttribute('selected-value','CA')">
+        Set to California
+      </button>
+      <button onclick="document.getElementById('states1').setAttribute('selected-value','NY')">
+        Set to New York
+      </button>
+    </div>
+  </div>
+
+  <!-- ======== Generic Data: Simple CSV ======== -->
+  <h2>4. Generic Data &mdash; Simple CSV</h2>
+  <div class="demo-section">
+    <label>Pick a color:</label>
+    <quickpick-appointment
+      id="colors1"
+      placeholder="Choose a color"
+      data="Red,Orange,Yellow,Green,Blue,Indigo,Violet,Black,White,Gray,Pink,Brown"
+    ></quickpick-appointment>
+
+    <div class="event-log" id="colors-log"></div>
+  </div>
+
+  <!-- ======== Generic Data: CSV with value:label pairs ======== -->
+  <h2>5. Generic Data &mdash; Value:Label CSV</h2>
+  <div class="demo-section">
+    <label>Pick a service type:</label>
+    <quickpick-appointment
+      id="services1"
+      placeholder="Choose a service"
+      data="PT:Physical Therapy,MT:Massage Therapy,AC:Acupuncture,CL:Life Coaching,PS:Psychoanalysis,WC:Wellness Coaching"
+    ></quickpick-appointment>
+
+    <div class="event-log" id="services-log"></div>
+
+    <div class="controls">
+      <button onclick="document.getElementById('services1').setAttribute('selected-value','MT')">
+        Set to Massage Therapy
+      </button>
+      <button onclick="document.getElementById('services1').toggleAttribute('disabled')">
+        Toggle Disabled
+      </button>
+    </div>
+  </div>
+
   <!-- ======== Business Hours Picker ======== -->
-  <h2>3. Business Hours Picker</h2>
+  <h2>6. Business Hours Picker</h2>
   <div class="demo-section">
     <label>Set opening hours:</label>
     <quickpick-hours
@@ -169,6 +226,17 @@
     });
     document.getElementById('appt-afternoon').addEventListener('time-change', function (e) {
       log('multi-log', 'Afternoon → ' + e.detail.time);
+    });
+
+    // Generic data events
+    document.getElementById('states1').addEventListener('item-change', function (e) {
+      log('states-log', 'item-change → ' + e.detail.value + ' (' + e.detail.label + ')');
+    });
+    document.getElementById('colors1').addEventListener('item-change', function (e) {
+      log('colors-log', 'item-change → ' + e.detail.value);
+    });
+    document.getElementById('services1').addEventListener('item-change', function (e) {
+      log('services-log', 'item-change → ' + e.detail.value + ' (' + e.detail.label + ')');
     });
 
     // Business hours events

@@ -5,6 +5,15 @@ import {
 } from '../components';
 import './App.css';
 
+const formatTime12Hour = (time24) => {
+  if (!time24) return '';
+  const [hour, minute] = time24.split(':').map(Number);
+  const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+  const ampm = hour < 12 ? 'AM' : 'PM';
+  const minuteStr = minute.toString().padStart(2, '0');
+  return minute === 0 ? `${hour12} ${ampm}` : `${hour12}:${minuteStr} ${ampm}`;
+};
+
 // ─── Code snippet display helper ───────────────────────────────────
 const CodeBlock = ({ code }) => (
   <pre className="code-block"><code>{code.trim()}</code></pre>
@@ -15,6 +24,52 @@ function App() {
   const [appointmentTime, setAppointmentTime] = useState(null);
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('17:00');
+  const [selectedState, setSelectedState] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedService, setSelectedService] = useState(null);
+
+  // Generic data items
+  const usStates = [
+    { value: 'AL', label: 'Alabama' }, { value: 'AK', label: 'Alaska' },
+    { value: 'AZ', label: 'Arizona' }, { value: 'AR', label: 'Arkansas' },
+    { value: 'CA', label: 'California' }, { value: 'CO', label: 'Colorado' },
+    { value: 'CT', label: 'Connecticut' }, { value: 'DE', label: 'Delaware' },
+    { value: 'FL', label: 'Florida' }, { value: 'GA', label: 'Georgia' },
+    { value: 'HI', label: 'Hawaii' }, { value: 'ID', label: 'Idaho' },
+    { value: 'IL', label: 'Illinois' }, { value: 'IN', label: 'Indiana' },
+    { value: 'IA', label: 'Iowa' }, { value: 'KS', label: 'Kansas' },
+    { value: 'KY', label: 'Kentucky' }, { value: 'LA', label: 'Louisiana' },
+    { value: 'ME', label: 'Maine' }, { value: 'MD', label: 'Maryland' },
+    { value: 'MA', label: 'Massachusetts' }, { value: 'MI', label: 'Michigan' },
+    { value: 'MN', label: 'Minnesota' }, { value: 'MS', label: 'Mississippi' },
+    { value: 'MO', label: 'Missouri' }, { value: 'MT', label: 'Montana' },
+    { value: 'NE', label: 'Nebraska' }, { value: 'NV', label: 'Nevada' },
+    { value: 'NH', label: 'New Hampshire' }, { value: 'NJ', label: 'New Jersey' },
+    { value: 'NM', label: 'New Mexico' }, { value: 'NY', label: 'New York' },
+    { value: 'NC', label: 'North Carolina' }, { value: 'ND', label: 'North Dakota' },
+    { value: 'OH', label: 'Ohio' }, { value: 'OK', label: 'Oklahoma' },
+    { value: 'OR', label: 'Oregon' }, { value: 'PA', label: 'Pennsylvania' },
+    { value: 'RI', label: 'Rhode Island' }, { value: 'SC', label: 'South Carolina' },
+    { value: 'SD', label: 'South Dakota' }, { value: 'TN', label: 'Tennessee' },
+    { value: 'TX', label: 'Texas' }, { value: 'UT', label: 'Utah' },
+    { value: 'VT', label: 'Vermont' }, { value: 'VA', label: 'Virginia' },
+    { value: 'WA', label: 'Washington' }, { value: 'WV', label: 'West Virginia' },
+    { value: 'WI', label: 'Wisconsin' }, { value: 'WY', label: 'Wyoming' },
+  ];
+
+  const colors = [
+    'Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Indigo', 'Violet',
+    'Black', 'White', 'Gray', 'Pink', 'Brown',
+  ].map(c => ({ value: c, label: c }));
+
+  const serviceTypes = [
+    { value: 'PT', label: 'Physical Therapy' },
+    { value: 'MT', label: 'Massage Therapy' },
+    { value: 'AC', label: 'Acupuncture' },
+    { value: 'CL', label: 'Life Coaching' },
+    { value: 'PS', label: 'Psychoanalysis' },
+    { value: 'WC', label: 'Wellness Coaching' },
+  ];
 
   // Sample business hours config
   const businessHours = {
@@ -76,7 +131,7 @@ function App() {
                 <li>Smart positioning avoids viewport edges</li>
               </ul>
               <div className="selected-display">
-                Selected: <strong>{appointmentTime || 'none'}</strong>
+                Selected: <strong>{appointmentTime ? formatTime12Hour(appointmentTime) : 'none'}</strong>
               </div>
             </div>
           </div>
@@ -209,7 +264,86 @@ export default function BookPage({ businessHours }) {
           </details>
         </section>
 
-        {/* ── 2. BusinessHoursTimeSelector ── */}
+        {/* ── 2. Generic Data — US States ── */}
+        <section className="demo-section">
+          <h2>Generic Data — US States</h2>
+          <p className="description">
+            The same popup grid used as a generic select list.
+            Pass an <code>items</code> array instead of business hours.
+            Adaptive columns: long labels → 2 cols.
+          </p>
+          <div className="demo-row">
+            <div className="demo-widget" style={{ minHeight: '60px' }}>
+              <AppointmentTimeSelector
+                items={usStates}
+                selectedValue={selectedState}
+                onTimeChange={(item) => setSelectedState(item.value)}
+                placeholder="Choose a state"
+              />
+            </div>
+            <div className="demo-info">
+              <h3>Items Mode Props</h3>
+              <ul>
+                <li><code>items</code> - Array of &#123;value, label&#125;</li>
+                <li><code>selectedValue</code> - Currently selected value</li>
+                <li><code>onTimeChange(item)</code> - Fires with &#123;value, label&#125;</li>
+                <li><code>placeholder</code> - Button placeholder text</li>
+                <li><code>columns</code> - Override auto column count</li>
+              </ul>
+              <div className="selected-display">
+                Selected: <strong>{selectedState ? usStates.find(s => s.value === selectedState)?.label : 'none'}</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 3. Generic Data — Colors (short labels) ── */}
+        <section className="demo-section">
+          <h2>Generic Data — Colors</h2>
+          <p className="description">
+            Short labels auto-select 3 columns. Value equals label for simple lists.
+          </p>
+          <div className="demo-row">
+            <div className="demo-widget" style={{ minHeight: '60px' }}>
+              <AppointmentTimeSelector
+                items={colors}
+                selectedValue={selectedColor}
+                onTimeChange={(item) => setSelectedColor(item.value)}
+                placeholder="Choose a color"
+              />
+            </div>
+            <div className="demo-info">
+              <div className="selected-display">
+                Selected: <strong>{selectedColor || 'none'}</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 4. Generic Data — Service Types (value:label) ── */}
+        <section className="demo-section">
+          <h2>Generic Data — Service Types</h2>
+          <p className="description">
+            Value/label pairs with longer labels → 2 columns.
+          </p>
+          <div className="demo-row">
+            <div className="demo-widget" style={{ minHeight: '60px' }}>
+              <AppointmentTimeSelector
+                items={serviceTypes}
+                selectedValue={selectedService}
+                onTimeChange={(item) => setSelectedService(item.value)}
+                placeholder="Choose a service"
+              />
+            </div>
+            <div className="demo-info">
+              <div className="selected-display">
+                Selected: <strong>{selectedService ? serviceTypes.find(s => s.value === selectedService)?.label : 'none'}</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 5. BusinessHoursTimeSelector ── */}
         <section className="demo-section">
           <h2>BusinessHoursTimeSelector</h2>
           <p className="description">
@@ -235,7 +369,7 @@ export default function BookPage({ businessHours }) {
                 <li><code>disabled</code> - Disable both selectors</li>
               </ul>
               <div className="selected-display">
-                Hours: <strong>{startTime} - {endTime}</strong>
+                Hours: <strong>{formatTime12Hour(startTime)} - {formatTime12Hour(endTime)}</strong>
               </div>
             </div>
           </div>
