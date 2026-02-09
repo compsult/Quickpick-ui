@@ -28,6 +28,12 @@ function App() {
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
 
+  // Vanilla JS demo state
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [selectedVanillaColor, setSelectedVanillaColor] = useState(null);
+  const [selectedSize, setSelectedSize] = useState('Medium');
+  const [selectedVanillaState, setSelectedVanillaState] = useState(null);
+
   // Generic data items
   const usStates = [
     { value: 'AL', label: 'Alabama' }, { value: 'AK', label: 'Alaska' },
@@ -71,6 +77,28 @@ function App() {
     { value: 'WC', label: 'Wellness Coaching' },
   ];
 
+  // Vanilla JS demo data (mirrors the code snippets in section 6)
+  const months = [
+    'January','February','March','April','May','June',
+    'July','August','September','October','November','December',
+  ].map(m => ({ value: m, label: m }));
+
+  const vanillaColors = [
+    'Red','Orange','Yellow','Green','Blue','Indigo','Violet',
+  ].map(c => ({ value: c, label: c }));
+
+  const sizes = [
+    'Small','Medium','Large','X-Large',
+  ].map(s => ({ value: s, label: s }));
+
+  const vanillaStates = [
+    { value: 'CA', label: 'California' },
+    { value: 'NY', label: 'New York' },
+    { value: 'TX', label: 'Texas' },
+    { value: 'FL', label: 'Florida' },
+    { value: 'IL', label: 'Illinois' },
+  ];
+
   // Sample business hours config
   const businessHours = {
     monday: { enabled: true, start: '09:00', end: '17:00' },
@@ -90,7 +118,153 @@ function App() {
       </header>
 
       <main className="demo-sections">
-        {/* ── 1. AppointmentTimeSelector ── */}
+        {/* ── 1. Vanilla JS / Web Component Usage ── */}
+        <section className="demo-section">
+          <h2>Vanilla JS / Web Component</h2>
+          <p className="description">
+            Drop-in usage without React. Include the script, call <code>Quickpick()</code> on any input.
+            The live previews below show exactly what each snippet renders.
+          </p>
+
+          {/* 1a. Months — simplest possible */}
+          <h3 style={{ marginTop: 24, marginBottom: 4 }}>1. Months (plain string array)</h3>
+          <div className="demo-row">
+            <div className="demo-widget" style={{ minHeight: '60px' }}>
+              <AppointmentTimeSelector
+                items={months}
+                selectedValue={selectedMonth}
+                onTimeChange={(item) => setSelectedMonth(item.value)}
+                label="Month"
+              />
+            </div>
+            <div className="demo-info">
+              <div className="selected-display">
+                Selected: <strong>{selectedMonth || 'none'}</strong>
+              </div>
+            </div>
+          </div>
+          <details className="code-details">
+            <summary>Code</summary>
+            <CodeBlock code={`
+<script src="quickpick.min.js"></script>
+<input id="months" />
+
+<script>
+  var Data = ["January","February","March","April","May","June",
+              "July","August","September","October","November","December"];
+
+  Quickpick('#months', Data);
+</script>
+            `} />
+          </details>
+
+          {/* 1b. Colors — with options */}
+          <h3 style={{ marginTop: 24, marginBottom: 4 }}>2. Colors (with options)</h3>
+          <div className="demo-row">
+            <div className="demo-widget" style={{ minHeight: '60px' }}>
+              <AppointmentTimeSelector
+                items={vanillaColors}
+                selectedValue={selectedVanillaColor}
+                onTimeChange={(item) => setSelectedVanillaColor(item.value)}
+                placeholder="Pick a color"
+                label="Favorite Color"
+              />
+            </div>
+            <div className="demo-info">
+              <div className="selected-display">
+                Selected: <strong>{selectedVanillaColor || 'none'}</strong>
+              </div>
+            </div>
+          </div>
+          <details className="code-details">
+            <summary>Code</summary>
+            <CodeBlock code={`
+Quickpick('#colors', {
+  data: ["Red","Orange","Yellow","Green","Blue","Indigo","Violet"],
+  placeholder: "Pick a color",
+  label: "Favorite Color",
+  onChange: function(item) {
+    console.log(item.value, item.label);
+  }
+});
+            `} />
+          </details>
+
+          {/* 1c. States — value:label CSV pairs */}
+          <h3 style={{ marginTop: 24, marginBottom: 4 }}>3. States (value:label pairs via CSV)</h3>
+          <div className="demo-row">
+            <div className="demo-widget" style={{ minHeight: '60px' }}>
+              <AppointmentTimeSelector
+                items={vanillaStates}
+                selectedValue={selectedVanillaState}
+                onTimeChange={(item) => setSelectedVanillaState(item.value)}
+                placeholder="Choose a state"
+              />
+            </div>
+            <div className="demo-info">
+              <div className="selected-display">
+                Selected: <strong>{selectedVanillaState ? vanillaStates.find(s => s.value === selectedVanillaState)?.label + ' (' + selectedVanillaState + ')' : 'none'}</strong>
+              </div>
+            </div>
+          </div>
+          <details className="code-details">
+            <summary>Code</summary>
+            <CodeBlock code={`
+Quickpick('#states', {
+  data: "CA:California,NY:New York,TX:Texas,FL:Florida,IL:Illinois",
+  placeholder: "Choose a state"
+});
+            `} />
+          </details>
+
+          {/* 1d. Pre-selected value */}
+          <h3 style={{ marginTop: 24, marginBottom: 4 }}>4. Pre-selected value</h3>
+          <div className="demo-row">
+            <div className="demo-widget" style={{ minHeight: '60px' }}>
+              <AppointmentTimeSelector
+                items={sizes}
+                selectedValue={selectedSize}
+                onTimeChange={(item) => setSelectedSize(item.value)}
+              />
+            </div>
+            <div className="demo-info">
+              <div className="selected-display">
+                Selected: <strong>{selectedSize || 'none'}</strong>
+              </div>
+            </div>
+          </div>
+          <details className="code-details">
+            <summary>Code</summary>
+            <CodeBlock code={`
+Quickpick('#preselect', {
+  data: ["Small","Medium","Large","X-Large"],
+  value: "Medium"
+});
+            `} />
+          </details>
+
+          {/* All Options reference */}
+          <details className="code-details" style={{ marginTop: 24 }}>
+            <summary>All Options Reference</summary>
+            <CodeBlock code={`
+var handle = Quickpick('#el', {
+  data: ["A","B","C"],    // string array, {value,label} array, or CSV string
+  placeholder: "Pick one",
+  label: "My Label",
+  columns: 3,
+  width: "400px",
+  value: "B",             // pre-selected value
+  onChange: function(item) { console.log(item); }
+});
+
+// Programmatic access
+handle.el;          // the <quickpick-appointment> element
+handle.destroy();   // remove widget, restore original input
+            `} />
+          </details>
+        </section>
+
+        {/* ── 2. AppointmentTimeSelector ── */}
         <section className="demo-section">
           <h2>AppointmentTimeSelector</h2>
           <p className="description">
@@ -352,7 +526,23 @@ export default function BookPage({ businessHours }) {
           </div>
         </section>
 
-        {/* ── 5. BusinessHoursTimeSelector ── */}
+        {/* ── 5. Loading State ── */}
+        <section className="demo-section">
+          <h2>Loading State</h2>
+          <p className="description">
+            Pass <code>loading=true</code> while fetching data. Shows a shimmer placeholder matching each selector's shape.
+          </p>
+          <div className="demo-row">
+            <div className="demo-widget">
+              <AppointmentTimeSelector loading label="Loading..." />
+            </div>
+            <div className="demo-widget">
+              <BusinessHoursTimeSelector loading />
+            </div>
+          </div>
+        </section>
+
+        {/* ── 6. BusinessHoursTimeSelector ── */}
         <section className="demo-section">
           <h2>BusinessHoursTimeSelector</h2>
           <p className="description">
@@ -486,6 +676,7 @@ export default function AdminHoursPage({ initialHours }) {
             `} />
           </details>
         </section>
+
       </main>
     </div>
   );

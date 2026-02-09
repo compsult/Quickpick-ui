@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AppointmentTimeSelector from '../AppointmentTimeSelector';
 
@@ -64,8 +64,10 @@ describe('AppointmentTimeSelector — time mode', () => {
     // Click a time slot
     await user.click(screen.getByLabelText('Select 9AM'));
     expect(handleChange).toHaveBeenCalledWith('09:00');
-    // Popup should be closed — no more time slots visible
-    expect(screen.queryByLabelText('Select 9AM')).not.toBeInTheDocument();
+    // Popup should be closed — no more time slots visible (waits for exit animation)
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Select 9AM')).not.toBeInTheDocument();
+    });
   });
 
   test('renders disabled state', () => {
@@ -155,8 +157,10 @@ describe('AppointmentTimeSelector — items mode', () => {
     render(<AppointmentTimeSelector {...defaultProps} />);
     await user.click(screen.getByRole('combobox'));
     await user.click(screen.getByText('California'));
-    // Popup should close
-    expect(screen.queryByText('New York')).not.toBeInTheDocument();
+    // Popup should close (waits for exit animation)
+    await waitFor(() => {
+      expect(screen.queryByText('New York')).not.toBeInTheDocument();
+    });
   });
 
   test('passes columns prop through to grid', async () => {
@@ -289,9 +293,19 @@ describe('AppointmentTimeSelector — desktop combobox', () => {
     window.matchMedia = jest.fn().mockImplementation(desktopMatchMedia);
   });
 
+  test('shows searchable placeholder hint on desktop for time mode', () => {
+    render(<AppointmentTimeSelector {...timeProps} />);
+    expect(screen.getByPlaceholderText('Type to search or select Monday time')).toBeInTheDocument();
+  });
+
+  test('shows searchable placeholder hint on desktop for items mode', () => {
+    render(<AppointmentTimeSelector items={items} onTimeChange={jest.fn()} />);
+    expect(screen.getByPlaceholderText('Type to search or select')).toBeInTheDocument();
+  });
+
   test('input is editable on desktop (no readonly)', () => {
     render(<AppointmentTimeSelector {...timeProps} />);
-    const input = screen.getByPlaceholderText('Select Monday time');
+    const input = screen.getByPlaceholderText(/Monday time/);
     expect(input).not.toHaveAttribute('readonly');
   });
 
@@ -310,7 +324,7 @@ describe('AppointmentTimeSelector — desktop combobox', () => {
   test('typing in time mode filters time slots', async () => {
     const user = userEvent.setup();
     render(<AppointmentTimeSelector {...timeProps} />);
-    const input = screen.getByPlaceholderText('Select Monday time');
+    const input = screen.getByPlaceholderText(/Monday time/);
     await user.click(input);
     await user.type(input, '9:3');
     // Should show 9:30AM but not 9AM, 9:15AM, 9:45AM
@@ -333,7 +347,7 @@ describe('AppointmentTimeSelector — desktop combobox', () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
     render(<AppointmentTimeSelector {...timeProps} onTimeChange={handleChange} />);
-    const input = screen.getByPlaceholderText('Select Monday time');
+    const input = screen.getByPlaceholderText(/Monday time/);
     await user.click(input);
     await user.type(input, '9:3');
     await user.keyboard('{Enter}');
@@ -348,8 +362,10 @@ describe('AppointmentTimeSelector — desktop combobox', () => {
     await user.type(input, 'cal');
     expect(screen.getByText('California')).toBeInTheDocument();
     await user.keyboard('{Escape}');
-    // Popup should close
-    expect(screen.queryByText('California')).not.toBeInTheDocument();
+    // Popup should close (waits for exit animation)
+    await waitFor(() => {
+      expect(screen.queryByText('California')).not.toBeInTheDocument();
+    });
   });
 
   test('filter text clears when popup closes via selection', async () => {
@@ -376,9 +392,392 @@ describe('AppointmentTimeSelector — desktop combobox', () => {
   test('shows "No matches" when filter produces zero results in time mode', async () => {
     const user = userEvent.setup();
     render(<AppointmentTimeSelector {...timeProps} />);
-    const input = screen.getByPlaceholderText('Select Monday time');
+    const input = screen.getByPlaceholderText(/Monday time/);
     await user.click(input);
     await user.type(input, 'zzz');
     expect(screen.getByText('No matches')).toBeInTheDocument();
+  });
+
+  test('ArrowDown from input focuses first grid button in time mode', async () => {
+    const user = userEvent.setup();
+    render(<AppointmentTimeSelector {...timeProps} />);
+    const input = screen.getByPlaceholderText(/Monday time/);
+    await user.click(input);
+    // Popup should be open
+    expect(screen.getByText('9AM')).toBeInTheDocument();
+    // ArrowDown from input → focus first grid button
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    // setTimeout(0) is used — flush it
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    const firstBtn = screen.getByLabelText('Select 9AM');
+    expect(document.activeElement).toBe(firstBtn);
+  });
+
+  test('ArrowDown from input focuses first item in items mode', async () => {
+    const user = userEvent.setup();
+    render(<AppointmentTimeSelector {...itemsProps} />);
+    const input = screen.getByPlaceholderText('Choose a state');
+    await user.click(input);
+    expect(screen.getByText('California')).toBeInTheDocument();
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    const firstBtn = screen.getByLabelText('Select California');
+    expect(document.activeElement).toBe(firstBtn);
+  });
+
+  test('ArrowUp from first grid row returns focus to input', async () => {
+    const user = userEvent.setup();
+    render(<AppointmentTimeSelector {...timeProps} />);
+    const input = screen.getByPlaceholderText(/Monday time/);
+    await user.click(input);
+    // Move into grid
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    const firstBtn = screen.getByLabelText('Select 9AM');
+    expect(document.activeElement).toBe(firstBtn);
+    // ArrowUp from first row → back to input
+    fireEvent.keyDown(firstBtn, { key: 'ArrowUp' });
+    expect(document.activeElement).toBe(input);
+  });
+
+  test('Escape from grid closes popup and refocuses input', async () => {
+    const user = userEvent.setup();
+    render(<AppointmentTimeSelector {...timeProps} />);
+    const input = screen.getByPlaceholderText(/Monday time/);
+    await user.click(input);
+    // Move into grid
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    const firstBtn = screen.getByLabelText('Select 9AM');
+    expect(document.activeElement).toBe(firstBtn);
+    // Escape → popup closes, focus returns to input
+    fireEvent.keyDown(firstBtn, { key: 'Escape' });
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Select 9AM')).not.toBeInTheDocument();
+    });
+    expect(document.activeElement).toBe(input);
+  });
+
+  test('ArrowDown works with filtered results', async () => {
+    const user = userEvent.setup();
+    render(<AppointmentTimeSelector {...itemsProps} />);
+    const input = screen.getByPlaceholderText('Choose a state');
+    await user.click(input);
+    await user.type(input, 'tex');
+    expect(screen.getByText('Texas')).toBeInTheDocument();
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    expect(document.activeElement).toBe(screen.getByLabelText('Select Texas'));
+  });
+
+  test('Enter on focused grid button selects the time', async () => {
+    const user = userEvent.setup();
+    const handleChange = jest.fn();
+    render(<AppointmentTimeSelector {...timeProps} onTimeChange={handleChange} />);
+    const input = screen.getByPlaceholderText(/Monday time/);
+    await user.click(input);
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    const firstBtn = screen.getByLabelText('Select 9AM');
+    expect(document.activeElement).toBe(firstBtn);
+    // Native click via Enter/Space on focused button
+    await user.click(firstBtn);
+    expect(handleChange).toHaveBeenCalledWith('09:00');
+  });
+});
+
+// ─── Clear button ─────────────────────────────────────────────────
+
+describe('AppointmentTimeSelector — clear button', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test('clear button visible when item value is selected', () => {
+    const items = [
+      { value: 'CA', label: 'California' },
+      { value: 'TX', label: 'Texas' },
+    ];
+    const { container } = render(
+      <AppointmentTimeSelector items={items} selectedValue="CA" onTimeChange={jest.fn()} />
+    );
+    expect(container.querySelector('.clear-btn')).toBeInTheDocument();
+  });
+
+  test('clear button visible when time is selected', () => {
+    const { container } = render(
+      <AppointmentTimeSelector
+        selectedTime="09:30"
+        onTimeChange={jest.fn()}
+        selectedDate={new Date(2026, 1, 9)}
+        businessHours={{ monday: { enabled: true, start: '09:00', end: '10:00' } }}
+      />
+    );
+    expect(container.querySelector('.clear-btn')).toBeInTheDocument();
+  });
+
+  test('clear button hidden when no value selected', () => {
+    const items = [
+      { value: 'CA', label: 'California' },
+    ];
+    const { container } = render(
+      <AppointmentTimeSelector items={items} selectedValue={null} onTimeChange={jest.fn()} />
+    );
+    expect(container.querySelector('.clear-btn')).not.toBeInTheDocument();
+  });
+
+  test('clear button hidden when no time selected', () => {
+    const { container } = render(
+      <AppointmentTimeSelector
+        selectedTime={null}
+        onTimeChange={jest.fn()}
+        selectedDate={new Date(2026, 1, 9)}
+        businessHours={{ monday: { enabled: true, start: '09:00', end: '10:00' } }}
+      />
+    );
+    expect(container.querySelector('.clear-btn')).not.toBeInTheDocument();
+  });
+
+  test('clicking clear calls onTimeChange with null for items mode', async () => {
+    const user = userEvent.setup();
+    const handleChange = jest.fn();
+    const items = [
+      { value: 'CA', label: 'California' },
+      { value: 'TX', label: 'Texas' },
+    ];
+    const { container } = render(
+      <AppointmentTimeSelector items={items} selectedValue="CA" onTimeChange={handleChange} />
+    );
+    await user.click(container.querySelector('.clear-btn'));
+    expect(handleChange).toHaveBeenCalledWith({ value: null, label: null });
+  });
+
+  test('clicking clear calls onTimeChange with null for time mode', async () => {
+    const user = userEvent.setup();
+    const handleChange = jest.fn();
+    const { container } = render(
+      <AppointmentTimeSelector
+        selectedTime="09:30"
+        onTimeChange={handleChange}
+        selectedDate={new Date(2026, 1, 9)}
+        businessHours={{ monday: { enabled: true, start: '09:00', end: '10:00' } }}
+      />
+    );
+    await user.click(container.querySelector('.clear-btn'));
+    expect(handleChange).toHaveBeenCalledWith(null);
+  });
+
+  test('clicking clear does NOT open popup', async () => {
+    const user = userEvent.setup();
+    const items = [
+      { value: 'CA', label: 'California' },
+      { value: 'TX', label: 'Texas' },
+    ];
+    const { container } = render(
+      <AppointmentTimeSelector items={items} selectedValue="CA" onTimeChange={jest.fn()} />
+    );
+    await user.click(container.querySelector('.clear-btn'));
+    // Popup should not be open (wait for any pending animation)
+    await waitFor(() => {
+      expect(screen.queryByText('California')).not.toBeInTheDocument();
+    });
+  });
+});
+
+// ─── First match highlight ────────────────────────────────────────
+
+describe('AppointmentTimeSelector — first match highlight', () => {
+  // Desktop mock
+  const desktopMatchMedia = (query) => ({
+    matches: query === '(hover: hover)',
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    window.matchMedia = jest.fn().mockImplementation(desktopMatchMedia);
+  });
+
+  test('first match highlighted while filtering in items mode', async () => {
+    const user = userEvent.setup();
+    const items = [
+      { value: 'CA', label: 'California' },
+      { value: 'NY', label: 'New York' },
+      { value: 'TX', label: 'Texas' },
+    ];
+    render(
+      <AppointmentTimeSelector items={items} selectedValue={null} onTimeChange={jest.fn()} placeholder="Choose" />
+    );
+    const input = screen.getByPlaceholderText('Choose');
+    await user.click(input);
+    await user.type(input, 'tex');
+    // Texas should have first-match class
+    const texasBtn = screen.getByLabelText('Select Texas');
+    expect(texasBtn).toHaveClass('first-match');
+  });
+
+  test('first match highlighted while filtering in time mode', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <AppointmentTimeSelector
+        selectedTime={null}
+        onTimeChange={jest.fn()}
+        selectedDate={new Date(2026, 1, 9)}
+        businessHours={{ monday: { enabled: true, start: '09:00', end: '10:00' } }}
+      />
+    );
+    const input = screen.getByPlaceholderText(/Monday time/);
+    await user.click(input);
+    await user.type(input, '9:3');
+    // 9:30AM should have first-match class
+    const slot930 = screen.getByLabelText('Select 9:30AM');
+    expect(slot930).toHaveClass('first-match');
+  });
+
+  test('no highlight when filter is empty', async () => {
+    const user = userEvent.setup();
+    const items = [
+      { value: 'CA', label: 'California' },
+      { value: 'NY', label: 'New York' },
+    ];
+    const { container } = render(
+      <AppointmentTimeSelector items={items} selectedValue={null} onTimeChange={jest.fn()} placeholder="Choose" />
+    );
+    const input = screen.getByPlaceholderText('Choose');
+    await user.click(input);
+    // No filter text — no first-match
+    const buttons = container.querySelectorAll('.first-match');
+    expect(buttons).toHaveLength(0);
+  });
+});
+
+// ─── Loading / skeleton state ────────────────────────────────────
+
+describe('AppointmentTimeSelector — loading state', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test('renders skeleton when loading=true', () => {
+    const { container } = render(
+      <AppointmentTimeSelector loading onTimeChange={jest.fn()} />
+    );
+    expect(container.querySelector('.skeleton-trigger')).toBeInTheDocument();
+    expect(container.querySelector('.skeleton-bar')).toBeInTheDocument();
+    // Should NOT render the normal trigger
+    expect(container.querySelector('.time-selector-trigger')).not.toBeInTheDocument();
+  });
+
+  test('renders skeleton label when loading with label prop', () => {
+    render(<AppointmentTimeSelector loading label="Test Label" onTimeChange={jest.fn()} />);
+    const label = screen.getByText('Test Label');
+    expect(label).toBeInTheDocument();
+    expect(label).toHaveClass('skeleton-label');
+  });
+
+  test('does not render skeleton label when loading without label', () => {
+    const { container } = render(
+      <AppointmentTimeSelector loading onTimeChange={jest.fn()} />
+    );
+    expect(container.querySelector('.skeleton-label')).not.toBeInTheDocument();
+  });
+});
+
+// ─── Tab key closes popup ────────────────────────────────────────
+
+describe('AppointmentTimeSelector — Tab key', () => {
+  const desktopMatchMedia = (query) => ({
+    matches: query === '(hover: hover)',
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  });
+
+  const timeProps = {
+    selectedTime: null,
+    onTimeChange: jest.fn(),
+    selectedDate: new Date(2026, 1, 9),
+    businessHours: {
+      monday: { enabled: true, start: '09:00', end: '10:00' },
+    },
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    window.matchMedia = jest.fn().mockImplementation(desktopMatchMedia);
+  });
+
+  test('Tab from input closes popup', async () => {
+    const user = userEvent.setup();
+    render(<AppointmentTimeSelector {...timeProps} />);
+    const input = screen.getByPlaceholderText(/Monday time/);
+    await user.click(input);
+    expect(screen.getByText('9AM')).toBeInTheDocument();
+    fireEvent.keyDown(input, { key: 'Tab' });
+    await waitFor(() => {
+      expect(screen.queryByText('9AM')).not.toBeInTheDocument();
+    });
+  });
+});
+
+// ─── ARIA attributes ─────────────────────────────────────────────
+
+describe('AppointmentTimeSelector — ARIA attributes', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test('trigger has aria-haspopup="listbox"', () => {
+    render(
+      <AppointmentTimeSelector
+        selectedTime={null}
+        onTimeChange={jest.fn()}
+        selectedDate={new Date(2026, 1, 9)}
+        businessHours={{ monday: { enabled: true, start: '09:00', end: '10:00' } }}
+      />
+    );
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-haspopup', 'listbox');
+  });
+
+  test('trigger has aria-controls when popup is open', async () => {
+    const user = userEvent.setup();
+    render(
+      <AppointmentTimeSelector
+        selectedTime={null}
+        onTimeChange={jest.fn()}
+        selectedDate={new Date(2026, 1, 9)}
+        businessHours={{ monday: { enabled: true, start: '09:00', end: '10:00' } }}
+      />
+    );
+    const trigger = screen.getByRole('combobox');
+    // Before open — no aria-controls
+    expect(trigger).not.toHaveAttribute('aria-controls');
+    await user.click(trigger);
+    // After open — has aria-controls matching popup id
+    const controlsId = trigger.getAttribute('aria-controls');
+    expect(controlsId).toBeTruthy();
+    expect(controlsId).toMatch(/^qp-popup-/);
+  });
+
+  test('popup has matching id', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <AppointmentTimeSelector
+        selectedTime={null}
+        onTimeChange={jest.fn()}
+        selectedDate={new Date(2026, 1, 9)}
+        businessHours={{ monday: { enabled: true, start: '09:00', end: '10:00' } }}
+      />
+    );
+    const trigger = screen.getByRole('combobox');
+    await user.click(trigger);
+    const controlsId = trigger.getAttribute('aria-controls');
+    const popup = container.querySelector(`#${controlsId}`);
+    expect(popup).toBeInTheDocument();
+    expect(popup).toHaveClass('time-grid-popup');
   });
 });

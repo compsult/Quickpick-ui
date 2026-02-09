@@ -183,3 +183,35 @@ body {
     width: 100%;
   }
 }
+
+@media (max-width: 480px) {
+  .demo-app {
+    padding: 12px;
+  }
+  .demo-header {
+    padding: 20px 16px;
+    margin-bottom: 24px;
+  }
+  .demo-header h1 {
+    font-size: 22px;
+  }
+  .demo-header p {
+    font-size: 13px;
+  }
+  .demo-sections {
+    gap: 20px;
+  }
+  .demo-section {
+    padding: 16px;
+  }
+  .demo-section h2 {
+    font-size: 17px;
+  }
+  .demo-info {
+    width: 100%;
+  }
+  .code-block {
+    font-size: 11px;
+    padding: 12px;
+  }
+}

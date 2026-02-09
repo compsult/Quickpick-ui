@@ -26,6 +26,7 @@ export default {
       file: 'dist/quickpick.min.js',
       format: 'iife',
       name: 'Quickpick',
+      exports: 'default',
       sourcemap: false,
     },
     {

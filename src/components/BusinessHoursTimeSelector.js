@@ -12,13 +12,17 @@ const BusinessHoursTimeSelector = ({
   onStartTimeChange,
   onEndTimeChange,
   disabled = false,
+  loading = false,
   className = '',
   width = null          // CSS value for overall width (e.g. '400px', '100%'); null = 320px default
 }) => {
   const [activeSelector, setActiveSelector] = useState(null); // 'start' or 'end'
+  const [popupShowing, setPopupShowing] = useState(false);
   const [filterText, setFilterText] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
+  const popupId = useRef('qp-bh-popup-' + Math.random().toString(36).slice(2, 8)).current;
   const hoverTimeoutRef = useRef(null);
+  const popupCloseTimerRef = useRef(null);
   const containerRef = useRef(null);
   const popupRef = useRef(null);
   const startButtonRef = useRef(null);
@@ -42,6 +46,25 @@ const BusinessHoursTimeSelector = ({
   // Clear filter when popup closes or switches
   useEffect(() => {
     setFilterText('');
+  }, [activeSelector]);
+
+  // Manage popup mount/unmount with exit animation delay
+  useEffect(() => {
+    if (activeSelector) {
+      if (popupCloseTimerRef.current) {
+        clearTimeout(popupCloseTimerRef.current);
+        popupCloseTimerRef.current = null;
+      }
+      setPopupShowing(true);
+    } else {
+      popupCloseTimerRef.current = setTimeout(() => {
+        setPopupShowing(false);
+        popupCloseTimerRef.current = null;
+      }, 150);
+    }
+    return () => {
+      if (popupCloseTimerRef.current) clearTimeout(popupCloseTimerRef.current);
+    };
   }, [activeSelector]);
 
   // Get first matching time slot for Enter key
@@ -153,6 +176,21 @@ const BusinessHoursTimeSelector = ({
     }
   }, [activeSelector, calculatePopupPosition]);
 
+  // Scroll to selected item when popup opens
+  useEffect(() => {
+    if (!activeSelector) return;
+    const timer = setTimeout(() => {
+      if (!popupRef.current) return;
+      const gridBody = popupRef.current.querySelector('.grid-body');
+      const selected = gridBody && gridBody.querySelector('.time-slot.selected');
+      if (!gridBody || !selected) return;
+      const selectedRect = selected.getBoundingClientRect();
+      const gridRect = gridBody.getBoundingClientRect();
+      gridBody.scrollTop += selectedRect.top - gridRect.top - gridBody.clientHeight / 2 + selectedRect.height / 2;
+    }, 20);
+    return () => clearTimeout(timer);
+  }, [activeSelector]);
+
   // Recalculate on window resize
   useEffect(() => {
     const handleResize = () => {
@@ -210,6 +248,9 @@ const BusinessHoursTimeSelector = ({
   const isMouseOverRelevantArea = useCallback((mouseX, mouseY) => {
     // Don't auto-close while an input is focused (user is typing)
     if (inputFocusedRef.current) return true;
+
+    // Don't auto-close while a grid button has keyboard focus
+    if (popupRef.current && popupRef.current.contains(document.activeElement)) return true;
 
     const popup = popupRef.current;
 
@@ -286,6 +327,26 @@ const BusinessHoursTimeSelector = ({
     }
   }, [activeSelector, startMouseTracking, stopMouseTracking]);
 
+  const highlightedValue = filterText.trim() ? getFirstMatch() : null;
+
+  if (loading) {
+    return (
+      <div className={`business-hours-time-selector ${className}`} style={width ? { width } : undefined}>
+        <div className="time-inputs-row">
+          <div className="skeleton-trigger">
+            <span className="skeleton-label">Start Time</span>
+            <div className="skeleton-bar" />
+          </div>
+          <span className="time-separator">to</span>
+          <div className="skeleton-trigger">
+            <span className="skeleton-label">End Time</span>
+            <div className="skeleton-bar" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (disabled) {
     return (
       <div className={`business-hours-time-selector disabled ${className}`}>
@@ -309,6 +370,8 @@ const BusinessHoursTimeSelector = ({
           onMouseEnter={activeSelector === 'start' ? undefined : () => handleButtonMouseEnter('start')}
           role="combobox"
           aria-expanded={activeSelector === 'start'}
+          aria-haspopup="listbox"
+          aria-controls={popupShowing && activeSelector === 'start' ? popupId : undefined}
           tabIndex={0}
         >
           <div className="time-input-field">
@@ -348,6 +411,18 @@ const BusinessHoursTimeSelector = ({
                   setFilterText('');
                   setActiveSelector(null);
                   if (startInputRef.current) startInputRef.current.blur();
+                } else if (e.key === 'Tab') {
+                  setActiveSelector(null);
+                  setFilterText('');
+                } else if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  if (activeSelector !== 'start') setActiveSelector('start');
+                  setTimeout(() => {
+                    if (popupRef.current) {
+                      const btn = popupRef.current.querySelector('button.time-slot:not(:disabled):not(.unavailable)');
+                      if (btn) btn.focus();
+                    }
+                  }, 0);
                 }
               } : undefined}
             />
@@ -364,6 +439,8 @@ const BusinessHoursTimeSelector = ({
           onMouseEnter={activeSelector === 'end' ? undefined : () => handleButtonMouseEnter('end')}
           role="combobox"
           aria-expanded={activeSelector === 'end'}
+          aria-haspopup="listbox"
+          aria-controls={popupShowing && activeSelector === 'end' ? popupId : undefined}
           tabIndex={0}
         >
           <div className="time-input-field">
@@ -403,6 +480,18 @@ const BusinessHoursTimeSelector = ({
                   setFilterText('');
                   setActiveSelector(null);
                   if (endInputRef.current) endInputRef.current.blur();
+                } else if (e.key === 'Tab') {
+                  setActiveSelector(null);
+                  setFilterText('');
+                } else if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  if (activeSelector !== 'end') setActiveSelector('end');
+                  setTimeout(() => {
+                    if (popupRef.current) {
+                      const btn = popupRef.current.querySelector('button.time-slot:not(:disabled):not(.unavailable)');
+                      if (btn) btn.focus();
+                    }
+                  }, 0);
                 }
               } : undefined}
             />
@@ -412,18 +501,19 @@ const BusinessHoursTimeSelector = ({
       </div>
 
       {/* Grid time selector */}
-      {activeSelector && (
+      {popupShowing && (
         <>
           {/* Backdrop for tap-to-close (touch only; desktop uses mouse-tracking) */}
           {isTouchDevice() && (
             <div
-              className="selector-backdrop"
+              className={`selector-backdrop ${!activeSelector ? 'backdrop-closing' : ''}`}
               onClick={closeSelector}
             />
           )}
           <div
+            id={popupId}
             ref={popupRef}
-            className="time-selector-popup"
+            className={`time-selector-popup ${!activeSelector ? 'popup-closing' : ''}`}
             onMouseEnter={handlePopupMouseEnter}
             style={{
               position: 'absolute',
@@ -448,6 +538,17 @@ const BusinessHoursTimeSelector = ({
                 maxTime={activeSelector === 'end' ? '22:00' : endTime}
                 showHeader={false}
                 filterText={filterText}
+                highlightedValue={highlightedValue}
+                onNavigateOut={() => {
+                  const ref = activeSelector === 'start' ? startInputRef : endInputRef;
+                  if (ref.current) ref.current.focus();
+                }}
+                onEscape={() => {
+                  const ref = activeSelector === 'start' ? startInputRef : endInputRef;
+                  setActiveSelector(null);
+                  setFilterText('');
+                  if (ref.current) ref.current.focus();
+                }}
               />
             </div>
           </div>

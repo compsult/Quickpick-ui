@@ -12,6 +12,7 @@ const AppointmentTimeSelector = ({
   selectedDate,
   businessHours,
   disabled = false,
+  loading = false,
   className = '',
   popupWidth = 'auto',  // 'auto' | 'match-button' | CSS value (e.g. '350px')
   width = null,         // CSS value for trigger+popup width (e.g. '400px', '100%'); null = match popup
@@ -24,7 +25,10 @@ const AppointmentTimeSelector = ({
   const [isGridOpen, setIsGridOpen] = useState(false);
   const [filterText, setFilterText] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
+  const [popupShowing, setPopupShowing] = useState(false);
+  const popupId = useRef('qp-popup-' + Math.random().toString(36).slice(2, 8)).current;
   const hoverTimeoutRef = useRef(null);
+  const popupCloseTimerRef = useRef(null);
   const containerRef = useRef(null);
   const popupRef = useRef(null);
   const buttonRef = useRef(null);
@@ -75,12 +79,37 @@ const AppointmentTimeSelector = ({
   const { minTime, maxTime } = getBusinessHoursForDate();
 
   const isItemsMode = items && items.length > 0;
+  const hasValue = isItemsMode ? !!selectedValue : !!selectedTime;
+
+  const handleClear = (e) => {
+    e.stopPropagation();
+    onTimeChange(isItemsMode ? { value: null, label: null } : null);
+  };
 
   // Clear filter when popup closes
   useEffect(() => {
     if (!isGridOpen) {
       setFilterText('');
     }
+  }, [isGridOpen]);
+
+  // Manage popup mount/unmount with exit animation delay
+  useEffect(() => {
+    if (isGridOpen) {
+      if (popupCloseTimerRef.current) {
+        clearTimeout(popupCloseTimerRef.current);
+        popupCloseTimerRef.current = null;
+      }
+      setPopupShowing(true);
+    } else {
+      popupCloseTimerRef.current = setTimeout(() => {
+        setPopupShowing(false);
+        popupCloseTimerRef.current = null;
+      }, 150);
+    }
+    return () => {
+      if (popupCloseTimerRef.current) clearTimeout(popupCloseTimerRef.current);
+    };
   }, [isGridOpen]);
 
   // Get filtered items for items mode
@@ -193,6 +222,21 @@ const AppointmentTimeSelector = ({
     }
   }, [isGridOpen, calculatePopupPosition]);
 
+  // Scroll to selected item when popup opens
+  useEffect(() => {
+    if (!isGridOpen) return;
+    const timer = setTimeout(() => {
+      if (!popupRef.current) return;
+      const gridBody = popupRef.current.querySelector('.grid-body');
+      const selected = gridBody && gridBody.querySelector('.time-slot.selected');
+      if (!gridBody || !selected) return;
+      const selectedRect = selected.getBoundingClientRect();
+      const gridRect = gridBody.getBoundingClientRect();
+      gridBody.scrollTop += selectedRect.top - gridRect.top - gridBody.clientHeight / 2 + selectedRect.height / 2;
+    }, 20);
+    return () => clearTimeout(timer);
+  }, [isGridOpen]);
+
   // Recalculate on window resize
   useEffect(() => {
     const handleResize = () => {
@@ -244,6 +288,9 @@ const AppointmentTimeSelector = ({
   const isMouseOverRelevantArea = useCallback((mouseX, mouseY) => {
     // Don't auto-close while the input is focused (user is typing)
     if (inputFocusedRef.current) return true;
+
+    // Don't auto-close while a grid button has keyboard focus
+    if (popupRef.current && popupRef.current.contains(document.activeElement)) return true;
 
     const button = buttonRef.current;
     const popup = popupRef.current;
@@ -318,6 +365,21 @@ const AppointmentTimeSelector = ({
     }
   }, [isGridOpen, startMouseTracking, stopMouseTracking]);
 
+  const highlightedValue = filterText.trim()
+    ? (isItemsMode ? getFilteredItems()[0]?.value ?? null : getFirstMatch())
+    : null;
+
+  if (loading) {
+    return (
+      <div className={`appointment-time-selector ${className}`} style={width ? { width } : undefined}>
+        <div className="skeleton-trigger">
+          {label && <span className="skeleton-label">{label}</span>}
+          <div className="skeleton-bar" />
+        </div>
+      </div>
+    );
+  }
+
   if (disabled) {
     return (
       <div className={`appointment-time-selector disabled ${className}`}>
@@ -339,6 +401,8 @@ const AppointmentTimeSelector = ({
         onMouseEnter={isGridOpen ? undefined : handleButtonMouseEnter}
         role="combobox"
         aria-expanded={isGridOpen}
+        aria-haspopup="listbox"
+        aria-controls={popupShowing ? popupId : undefined}
         tabIndex={0}
       >
         <div className="time-selector-field">
@@ -355,9 +419,10 @@ const AppointmentTimeSelector = ({
                   ? (items.find(i => i.value === selectedValue) || {}).label || selectedValue
                   : '')
                 : (selectedTime ? formatTime12Hour(selectedTime) : '')}
-            placeholder={isItemsMode
-              ? (placeholder || 'Select an option')
-              : `Select${selectedDate ? ' ' + selectedDate.toLocaleDateString('en-US', { weekday: 'long' }) : ''} time`}
+            placeholder={placeholder
+              || (isItemsMode
+                ? (isTouchDevice() ? 'Select an option' : 'Type to search or select')
+                : `${isTouchDevice() ? 'Select' : 'Type to search or select'}${selectedDate ? ' ' + selectedDate.toLocaleDateString('en-US', { weekday: 'long' }) : ''} time`)}
             tabIndex={-1}
             onClick={!isTouchDevice() ? (e) => e.stopPropagation() : undefined}
             onMouseDown={!isTouchDevice() ? (e) => e.stopPropagation() : undefined}
@@ -384,25 +449,41 @@ const AppointmentTimeSelector = ({
                 setFilterText('');
                 setIsGridOpen(false);
                 if (inputRef.current) inputRef.current.blur();
+              } else if (e.key === 'Tab') {
+                setIsGridOpen(false);
+                setFilterText('');
+              } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (!isGridOpen) setIsGridOpen(true);
+                setTimeout(() => {
+                  if (popupRef.current) {
+                    const btn = popupRef.current.querySelector('button.time-slot:not(:disabled):not(.unavailable)');
+                    if (btn) btn.focus();
+                  }
+                }, 0);
               }
             } : undefined}
           />
         </div>
+        {hasValue && !inputFocused && (
+          <span className="clear-btn" onClick={handleClear}>×</span>
+        )}
         <span className="dropdown-arrow">&#9660;</span>
       </div>
 
-      {isGridOpen && (
+      {popupShowing && (
         <>
           {/* Backdrop for tap-to-close (touch only; desktop uses mouse-tracking) */}
           {isTouchDevice() && (
             <div
-              className="selector-backdrop"
+              className={`selector-backdrop ${!isGridOpen ? 'backdrop-closing' : ''}`}
               onClick={handleBackdropClose}
             />
           )}
           <div
+            id={popupId}
             ref={popupRef}
-            className={`time-grid-popup ${(width || popupWidth !== 'auto') ? 'popup-stretch' : 'popup-auto'}`}
+            className={`time-grid-popup ${!isGridOpen ? 'popup-closing' : ''} ${(width || popupWidth !== 'auto') ? 'popup-stretch' : 'popup-auto'}`}
             onMouseEnter={handlePopupMouseEnter}
             style={{
               position: 'absolute',
@@ -431,6 +512,15 @@ const AppointmentTimeSelector = ({
                   columns={columns}
                   selectedValue={selectedValue}
                   filterText={isItemsMode ? '' : filterText}
+                  highlightedValue={highlightedValue}
+                  onNavigateOut={() => {
+                    if (inputRef.current) inputRef.current.focus();
+                  }}
+                  onEscape={() => {
+                    setIsGridOpen(false);
+                    setFilterText('');
+                    if (inputRef.current) inputRef.current.focus();
+                  }}
                 />
               )}
             </div>

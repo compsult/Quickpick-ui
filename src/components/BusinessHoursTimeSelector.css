@@ -157,6 +157,27 @@
   color: #667eea;
 }
 
+/* Popup entrance/exit keyframes */
+@keyframes qp-popup-enter {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes qp-popup-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
+}
+
+@keyframes qp-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes qp-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
 /* Popup selector */
 .time-selector-popup {
   position: absolute;
@@ -168,6 +189,12 @@
   max-height: 420px;
   overflow: hidden;
   min-width: 100%; /* match container width */
+  animation: qp-popup-enter 150ms ease;
+}
+
+.time-selector-popup.popup-closing {
+  animation: qp-popup-exit 150ms ease forwards;
+  pointer-events: none;
 }
 
 .time-selector-popup .popup-scroll-area {
@@ -222,6 +249,12 @@
   background: rgba(0, 0, 0, 0.05);
   z-index: 999;
   touch-action: manipulation;
+  animation: qp-fade-in 150ms ease;
+}
+
+.business-hours-time-selector .selector-backdrop.backdrop-closing {
+  animation: qp-fade-out 150ms ease forwards;
+  pointer-events: none;
 }
 
 @media (hover: none) {
@@ -294,5 +327,49 @@
     width: 95vw;
     min-width: 300px;
     max-width: 350px;
+  }
+}
+
+/* Skeleton loading state */
+@keyframes qp-shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+
+.business-hours-time-selector .skeleton-trigger {
+  flex: 1;
+  padding: 8px 12px 6px;
+  background: #f8fafc;
+  border-radius: 6px 6px 0 0;
+}
+
+.business-hours-time-selector .skeleton-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-bottom: 2px;
+}
+
+.business-hours-time-selector .skeleton-bar {
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 400px 100%;
+  animation: qp-shimmer 1.5s ease infinite;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .time-selector-popup,
+  .time-selector-popup.popup-closing,
+  .business-hours-time-selector .selector-backdrop,
+  .business-hours-time-selector .selector-backdrop.backdrop-closing {
+    animation: none;
+  }
+
+  .business-hours-time-selector .skeleton-bar {
+    animation: none;
   }
 }

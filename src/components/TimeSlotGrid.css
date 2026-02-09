@@ -111,6 +111,13 @@
   color: #00251a;
 }
 
+/* First match highlight (while typing to filter) */
+.time-slot.first-match {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+
 /* Unavailable state */
 .time-slot.unavailable {
   background: transparent;

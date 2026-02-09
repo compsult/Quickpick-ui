@@ -111,6 +111,12 @@ export const timeSlotGridCSS = `/* Time Slot Grid Styles - Matching the JPG Layo
   color: #00251a;
 }
 
+.time-slot.first-match {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+
 .time-slot.unavailable {
   background: transparent;
   color: transparent;
@@ -333,6 +339,22 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
   color: #3b82f6;
 }
 
+/* Clear button */
+.clear-btn {
+  font-size: 16px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0 2px 6px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+  pointer-events: auto;
+}
+
+.clear-btn:hover {
+  color: #ef4444;
+}
+
 /* Dropdown arrow */
 .dropdown-arrow {
   font-size: 12px;
@@ -351,6 +373,27 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
   color: #3b82f6;
 }
 
+/* Popup entrance/exit keyframes */
+@keyframes qp-popup-enter {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes qp-popup-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
+}
+
+@keyframes qp-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes qp-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
 /* Time grid popup — outer shell with border/shadow, clips content */
 .time-grid-popup {
   position: absolute;
@@ -362,6 +405,12 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
   max-height: 400px;
   overflow: hidden;
   min-width: 100%;
+  animation: qp-popup-enter 150ms ease;
+}
+
+.time-grid-popup.popup-closing {
+  animation: qp-popup-exit 150ms ease forwards;
+  pointer-events: none;
 }
 
 .popup-scroll-area {
@@ -435,6 +484,12 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
   background: rgba(0, 0, 0, 0.05);
   z-index: 999;
   touch-action: manipulation;
+  animation: qp-fade-in 150ms ease;
+}
+
+.selector-backdrop.backdrop-closing {
+  animation: qp-fade-out 150ms ease forwards;
+  pointer-events: none;
 }
 
 @media (hover: none) {
@@ -488,6 +543,48 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
   }
   .popup-header {
     padding: 14px 16px;
+  }
+}
+
+/* Skeleton loading state */
+@keyframes qp-shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+
+.appointment-time-selector .skeleton-trigger {
+  padding: 8px 12px 6px;
+  background: #f8fafc;
+  border-radius: 6px 6px 0 0;
+}
+
+.appointment-time-selector .skeleton-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-bottom: 2px;
+}
+
+.appointment-time-selector .skeleton-bar {
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 400px 100%;
+  animation: qp-shimmer 1.5s ease infinite;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .time-grid-popup,
+  .time-grid-popup.popup-closing,
+  .selector-backdrop,
+  .selector-backdrop.backdrop-closing {
+    animation: none;
+  }
+
+  .appointment-time-selector .skeleton-bar {
+    animation: none;
   }
 }`;
 
@@ -643,6 +740,26 @@ export const businessHoursCSS = `/* Business Hours Time Selector Styles */
   color: #667eea;
 }
 
+@keyframes qp-popup-enter {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes qp-popup-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
+}
+
+@keyframes qp-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes qp-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
 .time-selector-popup {
   position: absolute;
   background: white;
@@ -653,6 +770,12 @@ export const businessHoursCSS = `/* Business Hours Time Selector Styles */
   max-height: 420px;
   overflow: hidden;
   min-width: 100%;
+  animation: qp-popup-enter 150ms ease;
+}
+
+.time-selector-popup.popup-closing {
+  animation: qp-popup-exit 150ms ease forwards;
+  pointer-events: none;
 }
 
 .time-selector-popup .popup-scroll-area {
@@ -705,6 +828,12 @@ export const businessHoursCSS = `/* Business Hours Time Selector Styles */
   background: rgba(0, 0, 0, 0.05);
   z-index: 999;
   touch-action: manipulation;
+  animation: qp-fade-in 150ms ease;
+}
+
+.business-hours-time-selector .selector-backdrop.backdrop-closing {
+  animation: qp-fade-out 150ms ease forwards;
+  pointer-events: none;
 }
 
 @media (hover: none) {
@@ -767,5 +896,48 @@ export const businessHoursCSS = `/* Business Hours Time Selector Styles */
     width: 95vw;
     min-width: 300px;
     max-width: 350px;
+  }
+}
+
+/* Skeleton loading state */
+@keyframes qp-shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+
+.business-hours-time-selector .skeleton-trigger {
+  flex: 1;
+  padding: 8px 12px 6px;
+  background: #f8fafc;
+  border-radius: 6px 6px 0 0;
+}
+
+.business-hours-time-selector .skeleton-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-bottom: 2px;
+}
+
+.business-hours-time-selector .skeleton-bar {
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 400px 100%;
+  animation: qp-shimmer 1.5s ease infinite;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .time-selector-popup,
+  .time-selector-popup.popup-closing,
+  .business-hours-time-selector .selector-backdrop,
+  .business-hours-time-selector .selector-backdrop.backdrop-closing {
+    animation: none;
+  }
+
+  .business-hours-time-selector .skeleton-bar {
+    animation: none;
   }
 }`;

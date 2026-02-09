@@ -12,8 +12,58 @@ const TimeSlotGrid = ({
   items = null,
   columns = null,
   selectedValue = null,
-  filterText = ''
+  filterText = '',
+  highlightedValue = null,
+  onNavigateOut = null,
+  onEscape = null
 }) => {
+  // Arrow key navigation handler for grid buttons
+  const handleGridKeyDown = (e) => {
+    const key = e.key;
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Escape', 'Home', 'End', 'Tab'].includes(key)) return;
+
+    if (key === 'Tab') {
+      // Let natural tab navigation proceed, but close the popup
+      if (onEscape) onEscape();
+      return;
+    }
+
+    e.preventDefault();
+
+    if (key === 'Escape') {
+      if (onEscape) onEscape();
+      return;
+    }
+
+    const gridBody = e.target.closest('.grid-body');
+    if (!gridBody) return;
+    const buttons = Array.from(gridBody.querySelectorAll('button.time-slot:not(:disabled):not(.unavailable)'));
+    const currentIndex = buttons.indexOf(e.target);
+    if (currentIndex === -1) return;
+
+    if (key === 'Home') {
+      buttons[0].focus();
+      return;
+    }
+    if (key === 'End') {
+      buttons[buttons.length - 1].focus();
+      return;
+    }
+
+    const colCount = parseInt(gridBody.dataset.colCount, 10) || 4;
+    let nextIndex;
+    if (key === 'ArrowRight') nextIndex = currentIndex + 1;
+    else if (key === 'ArrowLeft') nextIndex = currentIndex - 1;
+    else if (key === 'ArrowDown') nextIndex = currentIndex + colCount;
+    else if (key === 'ArrowUp') nextIndex = currentIndex - colCount;
+
+    if (nextIndex < 0) {
+      if (onNavigateOut) onNavigateOut();
+      return;
+    }
+    if (nextIndex >= buttons.length) return; // stay put
+    buttons[nextIndex].focus();
+  };
   // --- Generic items mode ---
   if (items && items.length > 0) {
     const maxLabelLen = items.reduce((max, item) => Math.max(max, item.label.length), 0);
@@ -40,7 +90,7 @@ const TimeSlotGrid = ({
 
     return (
       <div className={`time-slot-grid ${className}`}>
-        <div className="grid-body">
+        <div className="grid-body" role="listbox" data-col-count={colCount}>
           {rows.map((row, rowIndex) => {
             const isEvenRow = rowIndex % 2 === 0;
             return (
@@ -51,12 +101,16 @@ const TimeSlotGrid = ({
               >
                 {row.map((item) => {
                   const isSelected = selectedValue === item.value;
+                  const isHighlighted = highlightedValue === item.value;
                   return (
                     <button
                       key={item.value}
                       type="button"
-                      className={`time-slot ${isSelected ? 'selected' : ''}`}
+                      role="option"
+                      aria-selected={isSelected}
+                      className={`time-slot ${isSelected ? 'selected' : ''} ${isHighlighted ? 'first-match' : ''}`}
                       onClick={() => handleItemClick(item)}
+                      onKeyDown={handleGridKeyDown}
                       title={item.label}
                       aria-label={`Select ${item.label}`}
                     >
@@ -195,7 +249,7 @@ const TimeSlotGrid = ({
   return (
     <div className={`time-slot-grid ${className}`}>
       {/* Time slot grid - no headers, just the grid */}
-      <div className="grid-body">
+      <div className="grid-body" role="listbox" data-col-count="4">
         {hours.map((hour, hourIndex) => {
           const availableMinutes = filteredGroupedSlots[hour];
           const allMinutes = normalizedFilter ? availableMinutes : [0, 15, 30, 45];
@@ -207,14 +261,18 @@ const TimeSlotGrid = ({
               {allMinutes.map(minute => {
                 const isAvailable = availableMinutes.includes(minute);
                 const isSelected = isAvailable && isTimeSlotSelected(hour, minute);
+                const isHighlighted = isAvailable && highlightedValue === formatTime24(hour, minute);
                 const timeDisplay = formatTime12(hour, minute);
 
                 return (
                   <button
                     key={`${hour}:${minute}`}
                     type="button"
-                    className={`time-slot ${isSelected ? 'selected' : ''} ${!isAvailable ? 'unavailable' : ''}`}
+                    role="option"
+                    aria-selected={isSelected}
+                    className={`time-slot ${isSelected ? 'selected' : ''} ${isHighlighted ? 'first-match' : ''} ${!isAvailable ? 'unavailable' : ''}`}
                     onClick={() => isAvailable && handleTimeSlotClick(hour, minute)}
+                    onKeyDown={handleGridKeyDown}
                     disabled={!isAvailable}
                     title={isAvailable ? timeDisplay : 'Time not available'}
                     aria-label={isAvailable ? `Select ${timeDisplay}` : 'Time not available'}

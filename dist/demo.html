@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quickpick — Simple Demo</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 18px; margin-top: 40px; }
+    pre { background: #f5f5f5; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; }
+    .result { margin-top: 8px; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Quickpick — Simple API</h1>
+
+  <h2>1. Months (plain string array)</h2>
+  <pre>
+var Data = ["January","February","March","April","May","June",
+            "July","August","September","October","November","December"];
+
+Quickpick('#months', Data);</pre>
+  <input id="months" />
+  <div class="result" id="months-result">Selected: <strong>none</strong></div>
+
+  <h2>2. Colors (with options)</h2>
+  <pre>
+Quickpick('#colors', {
+  data: ["Red","Orange","Yellow","Green","Blue","Indigo","Violet"],
+  placeholder: "Pick a color",
+  label: "Favorite Color",
+  onChange: function(item) { console.log(item); }
+});</pre>
+  <input id="colors" />
+  <div class="result" id="colors-result">Selected: <strong>none</strong></div>
+
+  <h2>3. States (value:label pairs via CSV)</h2>
+  <pre>
+Quickpick('#states', {
+  data: "CA:California,NY:New York,TX:Texas,FL:Florida,IL:Illinois",
+  placeholder: "Choose a state"
+});</pre>
+  <input id="states" />
+  <div class="result" id="states-result">Selected: <strong>none</strong></div>
+
+  <h2>4. Pre-selected value</h2>
+  <pre>
+Quickpick('#preselect', {
+  data: ["Small","Medium","Large","X-Large"],
+  value: "Medium"
+});</pre>
+  <input id="preselect" />
+  <div class="result" id="preselect-result">Selected: <strong>Medium</strong></div>
+
+  <script src="quickpick.min.js"></script>
+  <script>
+    // 1. Simplest possible — just an array
+    var Data = ["January","February","March","April","May","June",
+                "July","August","September","October","November","December"];
+
+    Quickpick('#months', Data);
+
+    // 2. With options
+    Quickpick('#colors', {
+      data: ["Red","Orange","Yellow","Green","Blue","Indigo","Violet"],
+      placeholder: "Pick a color",
+      label: "Favorite Color",
+      onChange: function(item) {
+        document.querySelector('#colors-result strong').textContent = item.label;
+      }
+    });
+
+    // 3. CSV with value:label pairs
+    Quickpick('#states', {
+      data: "CA:California,NY:New York,TX:Texas,FL:Florida,IL:Illinois",
+      placeholder: "Choose a state",
+      onChange: function(item) {
+        document.querySelector('#states-result strong').textContent = item.label + ' (' + item.value + ')';
+      }
+    });
+
+    // 4. Pre-selected value
+    Quickpick('#preselect', {
+      data: ["Small","Medium","Large","X-Large"],
+      value: "Medium"
+    });
+
+    // Generic listener — all inputs sync their .value automatically
+    document.querySelector('#months').addEventListener('change', function() {
+      // Won't fire from Quickpick, but .value is always current
+    });
+
+    // Poll input values for the demo display
+    setInterval(function() {
+      var m = document.querySelector('#months').value;
+      if (m) document.querySelector('#months-result strong').textContent = m;
+      var p = document.querySelector('#preselect').value;
+      if (p) document.querySelector('#preselect-result strong').textContent = p;
+    }, 200);
+  </script>
+</body>
+</html>
