@@ -1,8 +1,8 @@
 {
-  "name": "time-select-widget",
+  "name": "quickpick-ui",
   "version": "1.0.0",
-  "private": true,
-  "description": "Standalone time selection widget extracted from BookingAddOn calendar system",
+  "license": "MIT",
+  "description": "Fast, touch-friendly picker for React and vanilla JS — type to filter on desktop, tap to select on mobile",
   "scripts": {
     "dev": "PORT=3005 react-scripts start",
     "build": "react-scripts build",
