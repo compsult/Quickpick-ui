@@ -474,7 +474,7 @@ Quickpick('#el', {
       placeholder: 'Pick a month',
       label: 'Month',
       onChange: function(item) {
-        document.querySelector('#result-months strong').textContent = item.label;
+        document.querySelector('#result-months strong').textContent = item ? item.label : 'none';
       }
     });
 
@@ -484,7 +484,7 @@ Quickpick('#el', {
       placeholder: 'Pick a color',
       label: 'Favorite Color',
       onChange: function(item) {
-        document.querySelector('#result-colors strong').textContent = item.label;
+        document.querySelector('#result-colors strong').textContent = item ? item.label : 'none';
       }
     });
 
@@ -493,7 +493,7 @@ Quickpick('#el', {
       data: 'CA:California,NY:New York,TX:Texas,FL:Florida,IL:Illinois',
       placeholder: 'Choose a state',
       onChange: function(item) {
-        document.querySelector('#result-states strong').textContent = item.label + ' (' + item.value + ')';
+        document.querySelector('#result-states strong').textContent = item ? item.label + ' (' + item.value + ')' : 'none';
       }
     });
 
@@ -502,7 +502,7 @@ Quickpick('#el', {
       data: ['Small','Medium','Large','X-Large'],
       value: 'Medium',
       onChange: function(item) {
-        document.querySelector('#result-preselect strong').textContent = item.label;
+        document.querySelector('#result-preselect strong').textContent = item ? item.label : 'none';
       }
     });
 
@@ -512,7 +512,7 @@ Quickpick('#el', {
       placeholder: 'Choose a state',
       label: 'US State',
       onChange: function(item) {
-        document.querySelector('#result-all-states strong').textContent = item.label + ' (' + item.value + ')';
+        document.querySelector('#result-all-states strong').textContent = item ? item.label + ' (' + item.value + ')' : 'none';
       }
     });
   </script>
