@@ -65,11 +65,21 @@ function Quickpick(target, options) {
     const detail = e.detail;
     // Items mode → detail has {value, label}; time mode → detail has {time}
     if (detail.value !== undefined) {
-      el.value = detail.value;
-      qp.setAttribute('selected-value', detail.value);
+      if (detail.value == null) {
+        el.value = '';
+        qp.removeAttribute('selected-value');
+      } else {
+        el.value = detail.value;
+        qp.setAttribute('selected-value', detail.value);
+      }
     } else if (detail.time !== undefined) {
-      el.value = detail.time;
-      qp.setAttribute('selected-time', detail.time);
+      if (detail.time == null) {
+        el.value = '';
+        qp.removeAttribute('selected-time');
+      } else {
+        el.value = detail.time;
+        qp.setAttribute('selected-time', detail.time);
+      }
     }
     if (opts.onChange) opts.onChange(detail);
   };

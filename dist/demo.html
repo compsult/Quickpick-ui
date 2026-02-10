@@ -67,7 +67,7 @@ Quickpick('#preselect', {
       placeholder: "Pick a color",
       label: "Favorite Color",
       onChange: function(item) {
-        document.querySelector('#colors-result strong').textContent = item ? item.label : 'none';
+        document.querySelector('#colors-result strong').textContent = item && item.label ? item.label : 'none';
       }
     });
 
@@ -76,7 +76,7 @@ Quickpick('#preselect', {
       data: "CA:California,NY:New York,TX:Texas,FL:Florida,IL:Illinois",
       placeholder: "Choose a state",
       onChange: function(item) {
-        document.querySelector('#states-result strong').textContent = item ? item.label + ' (' + item.value + ')' : 'none';
+        document.querySelector('#states-result strong').textContent = item && item.label ? item.label + ' (' + item.value + ')' : 'none';
       }
     });
 
