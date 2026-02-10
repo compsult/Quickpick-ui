@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quickpick UI — Fast, Touch-Friendly Picker</title>
+  <meta name="description" content="Fast, touch-friendly picker for React and vanilla JS. Type to filter on desktop, tap to select on mobile. Works as a time picker, generic select, or business hours editor." />
+  <meta property="og:title" content="Quickpick UI — Fast, Touch-Friendly Picker" />
+  <meta property="og:description" content="Drop-in time picker and select widget for React and vanilla JS. Type to filter, tap to select. Zero config." />
+  <meta property="og:type" content="website" />
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      color: #1f2937;
+      line-height: 1.6;
+      background: #f8fafc;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code {
+      font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      color: white;
+      text-align: center;
+      padding: 80px 24px 64px;
+    }
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+    .hero .tagline {
+      font-size: 20px;
+      color: #94a3b8;
+      max-width: 600px;
+      margin: 0 auto 32px;
+    }
+    .badges {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      font-size: 13px;
+      color: #cbd5e1;
+      font-weight: 500;
+    }
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.15s;
+    }
+    .btn:hover { transform: translateY(-1px); text-decoration: none; }
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    }
+    .btn-primary:hover { background: #1d4ed8; color: white; }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); color: white; }
+
+    /* ── Container ── */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Section ── */
+    .section {
+      padding: 64px 0;
+    }
+    .section + .section {
+      border-top: 1px solid #e2e8f0;
+    }
+    .section-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .section-subtitle {
+      font-size: 16px;
+      color: #64748b;
+      margin-bottom: 40px;
+    }
+
+    /* ── Demo Cards ── */
+    .demo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .demo-card {
+      background: white;
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+      border: 1px solid #e2e8f0;
+    }
+    .demo-card.full-width {
+      grid-column: 1 / -1;
+    }
+    .demo-card h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #1e293b;
+    }
+    .demo-card .demo-desc {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+    .demo-input-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .demo-input-row input {
+      flex: 1;
+    }
+    .demo-result {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #166534;
+    }
+    .demo-result strong {
+      font-family: 'SF Mono', Consolas, monospace;
+    }
+
+    /* ── Features Grid ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .feature {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e8f0;
+    }
+    .feature-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+    .feature h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #1e293b;
+    }
+    .feature p {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    /* ── Install Section ── */
+    .install-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .install-card {
+      background: white;
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e8f0;
+    }
+    .install-card h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #1e293b;
+    }
+    .code-block {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 16px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+      -webkit-overflow-scrolling: touch;
+    }
+    .code-block + .code-block {
+      margin-top: 12px;
+    }
+    .code-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      margin-top: 16px;
+    }
+    .code-label:first-child {
+      margin-top: 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 40px 24px;
+      color: #94a3b8;
+      font-size: 14px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .footer a { color: #64748b; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .hero { padding: 56px 20px 48px; }
+      .hero h1 { font-size: 32px; }
+      .hero .tagline { font-size: 16px; }
+      .demo-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      .install-options { grid-template-columns: 1fr; }
+      .section { padding: 48px 0; }
+      .section-title { font-size: 24px; }
+    }
+
+    @media (max-width: 480px) {
+      .hero { padding: 40px 16px 36px; }
+      .hero h1 { font-size: 26px; }
+      .hero .tagline { font-size: 15px; }
+      .badges { gap: 8px; }
+      .badge { font-size: 12px; padding: 4px 10px; }
+      .btn { padding: 10px 20px; font-size: 14px; }
+      .container { padding: 0 16px; }
+      .demo-card { padding: 20px; }
+      .code-block { font-size: 11px; padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════ Hero ══════════ -->
+  <header class="hero">
+    <h1>Quickpick UI</h1>
+    <p class="tagline">
+      Fast, touch-friendly picker for React and vanilla JS.<br />
+      Type to filter on desktop, tap to select on mobile.
+    </p>
+    <div class="badges">
+      <span class="badge">MIT License</span>
+      <span class="badge">Single File</span>
+      <span class="badge">~55 KB gzipped</span>
+      <span class="badge">128 Tests</span>
+    </div>
+    <div class="hero-actions">
+      <a href="#demos" class="btn btn-primary">Try It Live</a>
+      <a href="https://github.com/compsult/Quickpick-ui" class="btn btn-secondary">GitHub</a>
+    </div>
+  </header>
+
+  <!-- ══════════ Live Demos ══════════ -->
+  <section class="section" id="demos">
+    <div class="container">
+      <h2 class="section-title">Live Demos</h2>
+      <p class="section-subtitle">
+        These are real widgets running in your browser. Try typing to filter (desktop) or tapping to select (mobile).
+      </p>
+
+      <div class="demo-grid">
+        <!-- Demo 1: Months -->
+        <div class="demo-card">
+          <h3>Simple List</h3>
+          <p class="demo-desc">Pass a plain string array. One line of code.</p>
+          <input id="demo-months" placeholder="Pick a month" />
+          <div class="demo-result" id="result-months">Selected: <strong>none</strong></div>
+        </div>
+
+        <!-- Demo 2: Colors with options -->
+        <div class="demo-card">
+          <h3>With Options</h3>
+          <p class="demo-desc">Placeholder, label, change callback.</p>
+          <input id="demo-colors" />
+          <div class="demo-result" id="result-colors">Selected: <strong>none</strong></div>
+        </div>
+
+        <!-- Demo 3: States (value:label CSV) -->
+        <div class="demo-card">
+          <h3>Value:Label Pairs</h3>
+          <p class="demo-desc">CSV shorthand — <code>"CA:California,NY:New York"</code></p>
+          <input id="demo-states" />
+          <div class="demo-result" id="result-states">Selected: <strong>none</strong></div>
+        </div>
+
+        <!-- Demo 4: Pre-selected -->
+        <div class="demo-card">
+          <h3>Pre-Selected Value</h3>
+          <p class="demo-desc">Set <code>value</code> to pre-select an item.</p>
+          <input id="demo-preselect" />
+          <div class="demo-result" id="result-preselect">Selected: <strong>Medium</strong></div>
+        </div>
+
+        <!-- Demo 5: Many items (all 50 US states) -->
+        <div class="demo-card full-width">
+          <h3>50 US States (Type to Filter)</h3>
+          <p class="demo-desc">Works great with long lists. On desktop, start typing to narrow results — try "new" or "north".</p>
+          <input id="demo-all-states" />
+          <div class="demo-result" id="result-all-states">Selected: <strong>none</strong></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ Features ══════════ -->
+  <section class="section" id="features">
+    <div class="container">
+      <h2 class="section-title">Features</h2>
+      <p class="section-subtitle">Everything you need from a picker, nothing you don't.</p>
+
+      <div class="features-grid">
+        <div class="feature">
+          <div class="feature-icon" aria-hidden="true">&#9000;</div>
+          <h3>Type to Filter</h3>
+          <p>On desktop, just start typing in the input. The grid filters instantly. Enter selects the first match.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon" aria-hidden="true">&#9757;</div>
+          <h3>Touch Friendly</h3>
+          <p>On mobile, tap to open a bottom sheet with large tap targets. Tap backdrop to close. Input stays read-only.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon" aria-hidden="true">&#9000;</div>
+          <h3>Keyboard Navigation</h3>
+          <p>Arrow keys, Home/End, Tab to close, Escape to dismiss. Full keyboard support without a mouse.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon" aria-hidden="true">&#9851;</div>
+          <h3>Accessible</h3>
+          <p><code>role="listbox"</code>, <code>aria-selected</code>, <code>aria-haspopup</code>. Screen reader tested.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon" aria-hidden="true">&#128296;</div>
+          <h3>React + Vanilla JS</h3>
+          <p>Use as React components or drop in a single <code>&lt;script&gt;</code> tag. Web Components under the hood.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon" aria-hidden="true">&#9889;</div>
+          <h3>Smart Defaults</h3>
+          <p>Auto column count based on label length. Auto-positioning above/below. Reduced motion support.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ Install ══════════ -->
+  <section class="section" id="install">
+    <div class="container">
+      <h2 class="section-title">Get Started</h2>
+      <p class="section-subtitle">Two ways to use Quickpick — pick the one that fits your project.</p>
+
+      <div class="install-options">
+        <div class="install-card">
+          <h3>Vanilla JS (No Build Step)</h3>
+          <div class="code-label">Include the script</div>
+          <div class="code-block">&lt;script src="quickpick.min.js"&gt;&lt;/script&gt;</div>
+          <div class="code-label">Use it</div>
+          <div class="code-block">Quickpick('#el', ['Red', 'Green', 'Blue']);
+
+// With options
+Quickpick('#el', {
+  data: ['Red', 'Green', 'Blue'],
+  placeholder: 'Pick a color',
+  label: 'Favorite Color',
+  columns: 3,
+  value: 'Green',
+  onChange: function(item) {
+    console.log(item.value, item.label);
+  }
+});</div>
+        </div>
+
+        <div class="install-card">
+          <h3>React</h3>
+          <div class="code-label">Copy components into your project</div>
+          <div class="code-block">import {
+  AppointmentTimeSelector,
+  BusinessHoursTimeSelector
+} from './components';</div>
+          <div class="code-label">Time picker</div>
+          <div class="code-block">&lt;AppointmentTimeSelector
+  selectedTime={time}
+  onTimeChange={setTime}
+  selectedDate={new Date()}
+  businessHours={businessHours}
+  label="Appointment Time"
+/&gt;</div>
+          <div class="code-label">Generic select</div>
+          <div class="code-block">&lt;AppointmentTimeSelector
+  items={[
+    { value: 'CA', label: 'California' },
+    { value: 'NY', label: 'New York' },
+  ]}
+  selectedValue={selected}
+  onTimeChange={(item) =&gt; setSelected(item.value)}
+  label="US State"
+/&gt;</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ Footer ══════════ -->
+  <footer class="footer">
+    <p>
+      MIT License &middot;
+      <a href="https://github.com/compsult/Quickpick-ui">GitHub</a> &middot;
+      Built by <a href="https://github.com/compsult">Compsult</a>
+    </p>
+  </footer>
+
+  <!-- ══════════ Widget Script ══════════ -->
+  <script src="quickpick.min.js"></script>
+  <script>
+    // 1. Simple list
+    Quickpick('#demo-months', {
+      data: ['January','February','March','April','May','June',
+             'July','August','September','October','November','December'],
+      placeholder: 'Pick a month',
+      label: 'Month',
+      onChange: function(item) {
+        document.querySelector('#result-months strong').textContent = item.label;
+      }
+    });
+
+    // 2. With options
+    Quickpick('#demo-colors', {
+      data: ['Red','Orange','Yellow','Green','Blue','Indigo','Violet'],
+      placeholder: 'Pick a color',
+      label: 'Favorite Color',
+      onChange: function(item) {
+        document.querySelector('#result-colors strong').textContent = item.label;
+      }
+    });
+
+    // 3. Value:label CSV
+    Quickpick('#demo-states', {
+      data: 'CA:California,NY:New York,TX:Texas,FL:Florida,IL:Illinois',
+      placeholder: 'Choose a state',
+      onChange: function(item) {
+        document.querySelector('#result-states strong').textContent = item.label + ' (' + item.value + ')';
+      }
+    });
+
+    // 4. Pre-selected
+    Quickpick('#demo-preselect', {
+      data: ['Small','Medium','Large','X-Large'],
+      value: 'Medium',
+      onChange: function(item) {
+        document.querySelector('#result-preselect strong').textContent = item.label;
+      }
+    });
+
+    // 5. All 50 US states
+    Quickpick('#demo-all-states', {
+      data: 'AL:Alabama,AK:Alaska,AZ:Arizona,AR:Arkansas,CA:California,CO:Colorado,CT:Connecticut,DE:Delaware,FL:Florida,GA:Georgia,HI:Hawaii,ID:Idaho,IL:Illinois,IN:Indiana,IA:Iowa,KS:Kansas,KY:Kentucky,LA:Louisiana,ME:Maine,MD:Maryland,MA:Massachusetts,MI:Michigan,MN:Minnesota,MS:Mississippi,MO:Missouri,MT:Montana,NE:Nebraska,NV:Nevada,NH:New Hampshire,NJ:New Jersey,NM:New Mexico,NY:New York,NC:North Carolina,ND:North Dakota,OH:Ohio,OK:Oklahoma,OR:Oregon,PA:Pennsylvania,RI:Rhode Island,SC:South Carolina,SD:South Dakota,TN:Tennessee,TX:Texas,UT:Utah,VT:Vermont,VA:Virginia,WA:Washington,WV:West Virginia,WI:Wisconsin,WY:Wyoming',
+      placeholder: 'Choose a state',
+      label: 'US State',
+      onChange: function(item) {
+        document.querySelector('#result-all-states strong').textContent = item.label + ' (' + item.value + ')';
+      }
+    });
+  </script>
+
+</body>
+</html>
