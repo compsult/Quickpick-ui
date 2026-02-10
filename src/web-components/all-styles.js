@@ -341,10 +341,10 @@ export const appointmentCSS = `/* Appointment Time Selector Styles */
 
 /* Clear button */
 .clear-btn {
-  font-size: 16px;
+  font-size: 22px;
   color: #94a3b8;
   cursor: pointer;
-  padding: 0 2px 6px;
+  padding: 2px 4px 6px;
   line-height: 1;
   flex-shrink: 0;
   transition: color 0.15s ease;
