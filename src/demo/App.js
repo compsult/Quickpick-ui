@@ -114,7 +114,7 @@ function App() {
     <div className="demo-app">
       <header className="demo-header">
         <h1>Quickpick UI</h1>
-        <p>Fast, touch-friendly time pickers for React &amp; Next.js — type to filter on desktop</p>
+        <p>Fast, touch-friendly time pickers for React &amp; Next.js — type to filter on desktop, tab-through to auto-fill</p>
       </header>
 
       <main className="demo-sections">
@@ -124,6 +124,7 @@ function App() {
           <p className="description">
             Drop-in usage without React. Include the script, call <code>Quickpick()</code> on any input.
             The live previews below show exactly what each snippet renders.
+            All widgets below have <code>autoSelectOnTab</code> enabled — try tabbing through them to auto-fill each field with its first option.
           </p>
 
           {/* 1a. Months — simplest possible */}
@@ -135,6 +136,7 @@ function App() {
                 selectedValue={selectedMonth}
                 onTimeChange={(item) => setSelectedMonth(item.value)}
                 label="Month"
+                autoSelectOnTab
               />
             </div>
             <div className="demo-info">
@@ -168,6 +170,7 @@ function App() {
                 onTimeChange={(item) => setSelectedVanillaColor(item.value)}
                 placeholder="Pick a color"
                 label="Favorite Color"
+                autoSelectOnTab
               />
             </div>
             <div className="demo-info">
@@ -199,6 +202,7 @@ Quickpick('#colors', {
                 selectedValue={selectedVanillaState}
                 onTimeChange={(item) => setSelectedVanillaState(item.value)}
                 placeholder="Choose a state"
+                autoSelectOnTab
               />
             </div>
             <div className="demo-info">
@@ -218,13 +222,18 @@ Quickpick('#states', {
           </details>
 
           {/* 1d. Pre-selected value */}
-          <h3 style={{ marginTop: 24, marginBottom: 4 }}>4. Pre-selected value</h3>
+          <h3 style={{ marginTop: 24, marginBottom: 4 }}>4. Pre-selected value (tab-through preserves it)</h3>
+          <p className="description" style={{ marginBottom: 8 }}>
+            When a value is already set, tabbing through leaves it unchanged — the existing selection stays in the input.
+            This means pre-populated forms can be tabbed through without accidentally overwriting known-good data.
+          </p>
           <div className="demo-row">
             <div className="demo-widget" style={{ minHeight: '60px' }}>
               <AppointmentTimeSelector
                 items={sizes}
                 selectedValue={selectedSize}
                 onTimeChange={(item) => setSelectedSize(item.value)}
+                autoSelectOnTab
               />
             </div>
             <div className="demo-info">
@@ -254,6 +263,7 @@ var handle = Quickpick('#el', {
   columns: 3,
   width: "400px",
   value: "B",             // pre-selected value
+  autoSelectOnTab: true,  // tab-through auto-selects first item
   onChange: function(item) { console.log(item); }
 });
 
@@ -272,6 +282,7 @@ handle.destroy();   // remove widget, restore original input
             Hover-to-open on desktop, tap-to-toggle on mobile.
             On desktop, type in the input to filter visible time slots — Enter selects the first match, Escape closes.
             Auto-positions above/below based on viewport space.
+            With <code>autoSelectOnTab</code>, tabbing in opens the picker and tabbing out auto-selects the earliest time — ideal for forms where the default slot is usually correct.
           </p>
           <div className="demo-row">
             <div className="demo-widget" style={{ minHeight: '60px' }}>
@@ -281,6 +292,7 @@ handle.destroy();   // remove widget, restore original input
                 selectedDate={new Date()}
                 businessHours={businessHours}
                 label="Appointment Time"
+                autoSelectOnTab
               />
             </div>
             <div className="demo-info">
@@ -291,6 +303,7 @@ handle.destroy();   // remove widget, restore original input
                 <li><code>selectedDate</code> - Date object (determines business hours)</li>
                 <li><code>businessHours</code> - Config object per weekday</li>
                 <li><code>disabled</code> - Disable the selector</li>
+                <li><code>autoSelectOnTab</code> - Auto-select first option on tab-through</li>
                 <li><code>className</code> - Additional CSS class</li>
               </ul>
               <h3>popupWidth prop</h3>
@@ -305,6 +318,7 @@ handle.destroy();   // remove widget, restore original input
                 <li>Desktop: type in the input to filter options — Enter selects first match, Escape closes</li>
                 <li>Mobile: tap button to open, tap backdrop to close (input stays read-only)</li>
                 <li>Auto-closes after selecting a time</li>
+                <li>Tab-through: with <code>autoSelectOnTab</code>, tab in opens, tab out auto-selects first option</li>
                 <li>Smart positioning avoids viewport edges</li>
               </ul>
               <div className="selected-display">
@@ -449,6 +463,7 @@ export default function BookPage({ businessHours }) {
             Pass an <code>items</code> array instead of business hours.
             Adaptive columns: long labels → 2 cols.
             On desktop, type to filter — try typing "new" to find New Hampshire, New Jersey, New Mexico, and New York.
+            Tab-through auto-selects the first item in the list (Alabama) — useful when the order of items reflects the most common choice.
           </p>
           <div className="demo-row">
             <div className="demo-widget" style={{ minHeight: '60px' }}>
@@ -458,6 +473,7 @@ export default function BookPage({ businessHours }) {
                 onTimeChange={(item) => setSelectedState(item.value)}
                 placeholder="Choose a state"
                 label="US State"
+                autoSelectOnTab
               />
             </div>
             <div className="demo-info">
@@ -491,6 +507,7 @@ export default function BookPage({ businessHours }) {
                 onTimeChange={(item) => setSelectedColor(item.value)}
                 placeholder="Choose a color"
                 label="Favorite Color"
+                autoSelectOnTab
               />
             </div>
             <div className="demo-info">
@@ -516,6 +533,7 @@ export default function BookPage({ businessHours }) {
                 onTimeChange={(item) => setSelectedService(item.value)}
                 placeholder="Choose a service"
                 label="Service Type"
+                autoSelectOnTab
               />
             </div>
             <div className="demo-info">
@@ -549,6 +567,7 @@ export default function BookPage({ businessHours }) {
             Dual start/end time selector for configuring business hours.
             Each button opens a time grid popup (6 AM - 10 PM range).
             On desktop, type in either input to filter times — try typing "2p" to jump to 2 PM.
+            With <code>autoSelectOnTab</code>, tabbing through auto-fills start (6 AM) and end (matching start) when empty — existing values are never overwritten.
           </p>
           <div className="demo-row">
             <div className="demo-widget">
@@ -557,6 +576,7 @@ export default function BookPage({ businessHours }) {
                 endTime={endTime}
                 onStartTimeChange={setStartTime}
                 onEndTimeChange={setEndTime}
+                autoSelectOnTab
               />
             </div>
             <div className="demo-info">
@@ -567,6 +587,7 @@ export default function BookPage({ businessHours }) {
                 <li><code>onStartTimeChange(time)</code> - Start callback</li>
                 <li><code>onEndTimeChange(time)</code> - End callback</li>
                 <li><code>disabled</code> - Disable both selectors</li>
+                <li><code>autoSelectOnTab</code> - Auto-select first option on tab-through</li>
               </ul>
               <div className="selected-display">
                 Hours: <strong>{formatTime12Hour(startTime)} - {formatTime12Hour(endTime)}</strong>

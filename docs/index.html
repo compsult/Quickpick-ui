@@ -297,7 +297,7 @@
       <span class="badge">MIT License</span>
       <span class="badge">Single File</span>
       <span class="badge">~55 KB gzipped</span>
-      <span class="badge">128 Tests</span>
+      <span class="badge">142 Tests</span>
     </div>
     <div class="hero-actions">
       <a href="#demos" class="btn btn-primary">Try It Live</a>
@@ -380,6 +380,11 @@
           <p>Arrow keys, Home/End, Tab to close, Escape to dismiss. Full keyboard support without a mouse.</p>
         </div>
         <div class="feature">
+          <div class="feature-icon" aria-hidden="true">&#8677;</div>
+          <h3>Tab-Through Auto-Fill</h3>
+          <p>Enable <code>autoSelectOnTab</code> to let users fill forms by tabbing alone. Tab in opens the picker, tab out auto-selects the first option. Ideal for repetitive data entry with predictable defaults.</p>
+        </div>
+        <div class="feature">
           <div class="feature-icon" aria-hidden="true">&#9851;</div>
           <h3>Accessible</h3>
           <p><code>role="listbox"</code>, <code>aria-selected</code>, <code>aria-haspopup</code>. Screen reader tested.</p>
@@ -419,6 +424,7 @@ Quickpick('#el', {
   label: 'Favorite Color',
   columns: 3,
   value: 'Green',
+  autoSelectOnTab: true,
   onChange: function(item) {
     console.log(item.value, item.label);
   }
@@ -449,6 +455,7 @@ Quickpick('#el', {
   selectedValue={selected}
   onTimeChange={(item) =&gt; setSelected(item.value)}
   label="US State"
+  autoSelectOnTab
 /&gt;</div>
         </div>
       </div>

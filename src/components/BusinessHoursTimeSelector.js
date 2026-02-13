@@ -14,7 +14,8 @@ const BusinessHoursTimeSelector = ({
   disabled = false,
   loading = false,
   className = '',
-  width = null          // CSS value for overall width (e.g. '400px', '100%'); null = 320px default
+  width = null,         // CSS value for overall width (e.g. '400px', '100%'); null = 320px default
+  autoSelectOnTab = false
 }) => {
   const [activeSelector, setActiveSelector] = useState(null); // 'start' or 'end'
   const [popupShowing, setPopupShowing] = useState(false);
@@ -29,6 +30,7 @@ const BusinessHoursTimeSelector = ({
   const endButtonRef = useRef(null);
   const startInputRef = useRef(null);
   const endInputRef = useRef(null);
+  const interactedRef = useRef(false);       // tracks user typing/navigating for autoSelectOnTab
   const inputFocusedRef = useRef(false);    // ref copy for mouse-tracking interval
   const mouseTrackingIntervalRef = useRef(null);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
@@ -43,9 +45,10 @@ const BusinessHoursTimeSelector = ({
     return minute === 0 ? `${hour12} ${ampm}` : `${hour12}:${minuteStr} ${ampm}`;
   };
 
-  // Clear filter when popup closes or switches
+  // Clear filter when popup closes or switches; reset interaction tracking
   useEffect(() => {
     setFilterText('');
+    interactedRef.current = false;
   }, [activeSelector]);
 
   // Manage popup mount/unmount with exit animation delay
@@ -368,6 +371,13 @@ const BusinessHoursTimeSelector = ({
           className={`time-input-trigger ${activeSelector === 'start' ? 'active' : ''}`}
           onClick={() => handleButtonClick('start')}
           onMouseEnter={activeSelector === 'start' ? undefined : () => handleButtonMouseEnter('start')}
+          onFocus={autoSelectOnTab && !isTouchDevice() ? () => {
+            if (activeSelector !== 'start') {
+              interactedRef.current = false;
+              setActiveSelector('start');
+              setTimeout(() => { if (startInputRef.current) startInputRef.current.focus(); }, 0);
+            }
+          } : undefined}
           role="combobox"
           aria-expanded={activeSelector === 'start'}
           aria-haspopup="listbox"
@@ -389,6 +399,7 @@ const BusinessHoursTimeSelector = ({
               onClick={!isTouchDevice() ? (e) => e.stopPropagation() : undefined}
               onMouseDown={!isTouchDevice() ? (e) => e.stopPropagation() : undefined}
               onChange={!isTouchDevice() ? (e) => {
+                interactedRef.current = true;
                 setFilterText(e.target.value);
                 if (!activeSelector) setActiveSelector('start');
               } : undefined}
@@ -412,9 +423,13 @@ const BusinessHoursTimeSelector = ({
                   setActiveSelector(null);
                   if (startInputRef.current) startInputRef.current.blur();
                 } else if (e.key === 'Tab') {
+                  if (autoSelectOnTab && !interactedRef.current && !startTime) {
+                    onStartTimeChange('06:00');
+                  }
                   setActiveSelector(null);
                   setFilterText('');
                 } else if (e.key === 'ArrowDown') {
+                  interactedRef.current = true;
                   e.preventDefault();
                   if (activeSelector !== 'start') setActiveSelector('start');
                   setTimeout(() => {
@@ -437,6 +452,13 @@ const BusinessHoursTimeSelector = ({
           className={`time-input-trigger ${activeSelector === 'end' ? 'active' : ''}`}
           onClick={() => handleButtonClick('end')}
           onMouseEnter={activeSelector === 'end' ? undefined : () => handleButtonMouseEnter('end')}
+          onFocus={autoSelectOnTab && !isTouchDevice() ? () => {
+            if (activeSelector !== 'end') {
+              interactedRef.current = false;
+              setActiveSelector('end');
+              setTimeout(() => { if (endInputRef.current) endInputRef.current.focus(); }, 0);
+            }
+          } : undefined}
           role="combobox"
           aria-expanded={activeSelector === 'end'}
           aria-haspopup="listbox"
@@ -458,6 +480,7 @@ const BusinessHoursTimeSelector = ({
               onClick={!isTouchDevice() ? (e) => e.stopPropagation() : undefined}
               onMouseDown={!isTouchDevice() ? (e) => e.stopPropagation() : undefined}
               onChange={!isTouchDevice() ? (e) => {
+                interactedRef.current = true;
                 setFilterText(e.target.value);
                 if (!activeSelector) setActiveSelector('end');
               } : undefined}
@@ -481,9 +504,13 @@ const BusinessHoursTimeSelector = ({
                   setActiveSelector(null);
                   if (endInputRef.current) endInputRef.current.blur();
                 } else if (e.key === 'Tab') {
+                  if (autoSelectOnTab && !interactedRef.current && !endTime) {
+                    onEndTimeChange(startTime);
+                  }
                   setActiveSelector(null);
                   setFilterText('');
                 } else if (e.key === 'ArrowDown') {
+                  interactedRef.current = true;
                   e.preventDefault();
                   if (activeSelector !== 'end') setActiveSelector('end');
                   setTimeout(() => {
@@ -534,8 +561,8 @@ const BusinessHoursTimeSelector = ({
               <TimeSlotGrid
                 value={activeSelector === 'start' ? startTime : endTime}
                 onChange={handleTimeChange}
-                minTime={activeSelector === 'start' ? '06:00' : startTime}
-                maxTime={activeSelector === 'end' ? '22:00' : endTime}
+                minTime={activeSelector === 'start' ? '06:00' : (startTime || '06:00')}
+                maxTime={activeSelector === 'end' ? '22:00' : (endTime || '22:00')}
                 showHeader={false}
                 filterText={filterText}
                 highlightedValue={highlightedValue}

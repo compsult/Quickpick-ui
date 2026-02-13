@@ -74,6 +74,7 @@
     Standalone pickers via <code>&lt;script&gt;</code> tag &mdash; no React required.
     Works as a time picker or a generic data grid. Styles are fully encapsulated in Shadow DOM.
     On desktop, click the input and type to filter options &mdash; Enter selects the first match, Escape closes.
+    Widgets with <code>auto-select-on-tab</code> support tab-through: tab in opens the picker, tab out auto-selects the first option &mdash; great for speeding up repetitive data entry.
   </p>
 
   <!-- ======== Appointment Time Picker ======== -->
@@ -85,6 +86,7 @@
       selected-date="2026-02-09"
       business-hours='{"monday":{"enabled":true,"start":"09:00","end":"17:00"},"tuesday":{"enabled":true,"start":"09:00","end":"17:00"},"wednesday":{"enabled":true,"start":"09:00","end":"17:00"},"thursday":{"enabled":true,"start":"09:00","end":"17:00"},"friday":{"enabled":true,"start":"09:00","end":"12:00"},"saturday":{"enabled":false},"sunday":{"enabled":false}}'
       label="Appointment Time"
+      auto-select-on-tab
     ></quickpick-appointment>
 
     <div class="event-log" id="appt-log"></div>
@@ -192,6 +194,7 @@
       id="hours1"
       start-time="09:00"
       end-time="17:00"
+      auto-select-on-tab
     ></quickpick-hours>
 
     <div class="event-log" id="hours-log"></div>

@@ -781,3 +781,150 @@ describe('AppointmentTimeSelector — ARIA attributes', () => {
     expect(popup).toHaveClass('time-grid-popup');
   });
 });
+
+// ─── autoSelectOnTab ──────────────────────────────────────────────
+
+describe('AppointmentTimeSelector — autoSelectOnTab', () => {
+  // Desktop mock
+  const desktopMatchMedia = (query) => ({
+    matches: query === '(hover: hover)',
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  });
+
+  const timeProps = {
+    selectedTime: null,
+    onTimeChange: jest.fn(),
+    selectedDate: new Date(2026, 1, 9), // Monday
+    businessHours: {
+      monday: { enabled: true, start: '09:00', end: '10:00' },
+    },
+    autoSelectOnTab: true,
+  };
+
+  const items = [
+    { value: 'CA', label: 'California' },
+    { value: 'NY', label: 'New York' },
+    { value: 'TX', label: 'Texas' },
+  ];
+
+  const itemsProps = {
+    items,
+    selectedValue: null,
+    onTimeChange: jest.fn(),
+    placeholder: 'Choose a state',
+    autoSelectOnTab: true,
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    window.matchMedia = jest.fn().mockImplementation(desktopMatchMedia);
+  });
+
+  test('focus on trigger opens popup and focuses input', async () => {
+    render(<AppointmentTimeSelector {...timeProps} />);
+    const trigger = screen.getByRole('combobox');
+    fireEvent.focus(trigger);
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    // Popup should be open
+    expect(screen.getByText('9AM')).toBeInTheDocument();
+  });
+
+  test('Tab without interaction auto-selects minTime in time mode', async () => {
+    const handleChange = jest.fn();
+    render(<AppointmentTimeSelector {...timeProps} onTimeChange={handleChange} />);
+    const trigger = screen.getByRole('combobox');
+    fireEvent.focus(trigger);
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    const input = screen.getByPlaceholderText(/Monday time/);
+    fireEvent.keyDown(input, { key: 'Tab' });
+    expect(handleChange).toHaveBeenCalledWith('09:00');
+  });
+
+  test('Tab without interaction auto-selects first item in items mode', async () => {
+    const handleChange = jest.fn();
+    render(<AppointmentTimeSelector {...itemsProps} onTimeChange={handleChange} />);
+    const trigger = screen.getByRole('combobox');
+    fireEvent.focus(trigger);
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    const input = screen.getByPlaceholderText('Choose a state');
+    fireEvent.keyDown(input, { key: 'Tab' });
+    expect(handleChange).toHaveBeenCalledWith({ value: 'CA', label: 'California' });
+  });
+
+  test('Tab after typing does NOT auto-select', async () => {
+    const user = userEvent.setup();
+    const handleChange = jest.fn();
+    render(<AppointmentTimeSelector {...itemsProps} onTimeChange={handleChange} />);
+    const trigger = screen.getByRole('combobox');
+    fireEvent.focus(trigger);
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    const input = screen.getByPlaceholderText('Choose a state');
+    await user.type(input, 'tex');
+    handleChange.mockClear();
+    fireEvent.keyDown(input, { key: 'Tab' });
+    expect(handleChange).not.toHaveBeenCalled();
+  });
+
+  test('Tab after ArrowDown does NOT auto-select', async () => {
+    const handleChange = jest.fn();
+    render(<AppointmentTimeSelector {...timeProps} onTimeChange={handleChange} />);
+    const trigger = screen.getByRole('combobox');
+    fireEvent.focus(trigger);
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    const input = screen.getByPlaceholderText(/Monday time/);
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    handleChange.mockClear();
+    // Tab from the grid button
+    fireEvent.keyDown(input, { key: 'Tab' });
+    expect(handleChange).not.toHaveBeenCalled();
+  });
+
+  test('does NOT auto-select when value already exists', async () => {
+    const handleChange = jest.fn();
+    render(
+      <AppointmentTimeSelector {...timeProps} selectedTime="09:30" onTimeChange={handleChange} />
+    );
+    const trigger = screen.getByRole('combobox');
+    fireEvent.focus(trigger);
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    // When input is focused, it shows filterText (empty), not the display value
+    const input = screen.getByPlaceholderText(/Monday time/);
+    fireEvent.keyDown(input, { key: 'Tab' });
+    expect(handleChange).not.toHaveBeenCalled();
+  });
+
+  test('does NOT auto-select when autoSelectOnTab is false', async () => {
+    const handleChange = jest.fn();
+    render(
+      <AppointmentTimeSelector {...timeProps} autoSelectOnTab={false} onTimeChange={handleChange} />
+    );
+    // Open popup via click (trigger onFocus won't fire autoSelect behavior)
+    const user = userEvent.setup();
+    const input = screen.getByPlaceholderText(/Monday time/);
+    await user.click(input);
+    expect(screen.getByText('9AM')).toBeInTheDocument();
+    fireEvent.keyDown(input, { key: 'Tab' });
+    expect(handleChange).not.toHaveBeenCalled();
+  });
+
+  test('does NOT auto-select when selectedValue already exists in items mode', async () => {
+    const handleChange = jest.fn();
+    render(
+      <AppointmentTimeSelector {...itemsProps} selectedValue="TX" onTimeChange={handleChange} />
+    );
+    const trigger = screen.getByRole('combobox');
+    fireEvent.focus(trigger);
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    // When input is focused, it shows filterText (empty), not the display value
+    const input = screen.getByPlaceholderText('Choose a state');
+    fireEvent.keyDown(input, { key: 'Tab' });
+    expect(handleChange).not.toHaveBeenCalled();
+  });
+});

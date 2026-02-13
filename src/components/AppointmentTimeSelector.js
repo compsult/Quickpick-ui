@@ -20,7 +20,8 @@ const AppointmentTimeSelector = ({
   selectedValue = null,
   placeholder = null,
   columns = null,
-  label = null
+  label = null,
+  autoSelectOnTab = false
 }) => {
   const [isGridOpen, setIsGridOpen] = useState(false);
   const [filterText, setFilterText] = useState('');
@@ -33,6 +34,7 @@ const AppointmentTimeSelector = ({
   const popupRef = useRef(null);
   const buttonRef = useRef(null);
   const inputRef = useRef(null);
+  const interactedRef = useRef(false);       // tracks user typing/navigating for autoSelectOnTab
   const inputFocusedRef = useRef(false);    // ref copy for mouse-tracking interval
   const mouseTrackingIntervalRef = useRef(null);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
@@ -399,6 +401,13 @@ const AppointmentTimeSelector = ({
         className={`time-selector-trigger ${isGridOpen ? 'active' : ''}`}
         onClick={handleButtonClick}
         onMouseEnter={isGridOpen ? undefined : handleButtonMouseEnter}
+        onFocus={autoSelectOnTab && !isTouchDevice() ? () => {
+          if (!isGridOpen) {
+            interactedRef.current = false;
+            setIsGridOpen(true);
+            setTimeout(() => { if (inputRef.current) inputRef.current.focus(); }, 0);
+          }
+        } : undefined}
         role="combobox"
         aria-expanded={isGridOpen}
         aria-haspopup="listbox"
@@ -427,6 +436,7 @@ const AppointmentTimeSelector = ({
             onClick={!isTouchDevice() ? (e) => e.stopPropagation() : undefined}
             onMouseDown={!isTouchDevice() ? (e) => e.stopPropagation() : undefined}
             onChange={!isTouchDevice() ? (e) => {
+              interactedRef.current = true;
               setFilterText(e.target.value);
               if (!isGridOpen) setIsGridOpen(true);
             } : undefined}
@@ -450,9 +460,17 @@ const AppointmentTimeSelector = ({
                 setIsGridOpen(false);
                 if (inputRef.current) inputRef.current.blur();
               } else if (e.key === 'Tab') {
+                if (autoSelectOnTab && !interactedRef.current && !hasValue) {
+                  if (isItemsMode) {
+                    if (items.length > 0) onTimeChange(items[0]);
+                  } else {
+                    onTimeChange(minTime);
+                  }
+                }
                 setIsGridOpen(false);
                 setFilterText('');
               } else if (e.key === 'ArrowDown') {
+                interactedRef.current = true;
                 e.preventDefault();
                 if (!isGridOpen) setIsGridOpen(true);
                 setTimeout(() => {

@@ -53,6 +53,7 @@ function Quickpick(target, options) {
   if (opts.width) qp.setAttribute('width', opts.width);
   if (opts.popupWidth) qp.setAttribute('popup-width', opts.popupWidth);
   if (opts.disabled) qp.setAttribute('disabled', '');
+  if (opts.autoSelectOnTab) qp.setAttribute('auto-select-on-tab', '');
   if (opts.value) qp.setAttribute('selected-value', opts.value);
 
   // Time-mode props

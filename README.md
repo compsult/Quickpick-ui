@@ -134,6 +134,7 @@ Both selectors accept a `loading` prop that renders a shimmer skeleton:
 | `width` | `string` | CSS width for the trigger + popup |
 | `disabled` | `boolean` | Disable the selector |
 | `loading` | `boolean` | Show shimmer skeleton |
+| `autoSelectOnTab` | `boolean` | Auto-select first option on tab-through (default `false`) |
 
 ### BusinessHoursTimeSelector
 
@@ -146,12 +147,40 @@ Both selectors accept a `loading` prop that renders a shimmer skeleton:
 | `width` | `string` | CSS width override |
 | `disabled` | `boolean` | Disable both selectors |
 | `loading` | `boolean` | Show shimmer skeleton |
+| `autoSelectOnTab` | `boolean` | Auto-select first option on tab-through (default `false`) |
+
+## Tab-Through Auto-Select
+
+Enable `autoSelectOnTab` to let keyboard users fill forms by tabbing alone. When a user tabs into a widget, the dropdown opens automatically. If they tab out without typing or selecting anything, the first available option is auto-selected. This is ideal for repetitive data entry where the most common choice is the first item in the list.
+
+- Tabbing in opens the dropdown and focuses the input (desktop only)
+- Tabbing out with no interaction auto-selects the first item
+- Typing or arrow-navigating counts as interaction — their choice is preserved
+- Existing values are never overwritten
+- Opt-in: disabled by default, no breaking changes
+
+```jsx
+// React
+<AppointmentTimeSelector items={states} autoSelectOnTab ... />
+<BusinessHoursTimeSelector autoSelectOnTab ... />
+```
+
+```js
+// Vanilla JS
+Quickpick('#el', { data: ['A', 'B', 'C'], autoSelectOnTab: true });
+```
+
+```html
+<!-- Web component attribute -->
+<quickpick-appointment data="Red,Green,Blue" auto-select-on-tab></quickpick-appointment>
+```
 
 ## Behavior
 
 - **Desktop**: hover to open, type to filter, Enter selects first match, Escape closes, Tab closes
 - **Mobile**: tap to open, tap backdrop to close (input stays read-only)
 - **Keyboard**: Arrow keys navigate the grid, Home/End jump to first/last, Escape closes
+- **Tab-through**: with `autoSelectOnTab`, Tab in opens the dropdown; Tab out auto-selects the first option if no interaction occurred
 - **Accessibility**: `role="listbox"` / `role="option"`, `aria-selected`, `aria-haspopup`, `aria-controls`
 - **Reduced motion**: shimmer animation disabled when `prefers-reduced-motion: reduce`
 - **Auto-positioning**: popup flips above/below based on viewport space
@@ -161,7 +190,7 @@ Both selectors accept a `loading` prop that renders a shimmer skeleton:
 ```bash
 npm install
 npm run dev          # Start demo on port 3005
-npm test             # Run 128 tests
+npm test             # Run 142 tests
 npm run build:webcomponent  # Build dist/quickpick.min.js
 ```
 
