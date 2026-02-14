@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { flushSync } from 'react-dom';
 import TimeSlotGrid from './TimeSlotGrid';
 import './BusinessHoursTimeSelector.css';
 
@@ -31,6 +32,7 @@ const BusinessHoursTimeSelector = ({
   const startInputRef = useRef(null);
   const endInputRef = useRef(null);
   const interactedRef = useRef(false);       // tracks user typing/navigating for autoSelectOnTab
+  const tabbingOutRef = useRef(false);       // prevents trigger onFocus from re-opening during tab-out
   const inputFocusedRef = useRef(false);    // ref copy for mouse-tracking interval
   const mouseTrackingIntervalRef = useRef(null);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
@@ -372,7 +374,7 @@ const BusinessHoursTimeSelector = ({
           onClick={() => handleButtonClick('start')}
           onMouseEnter={activeSelector === 'start' ? undefined : () => handleButtonMouseEnter('start')}
           onFocus={autoSelectOnTab && !isTouchDevice() ? () => {
-            if (activeSelector !== 'start') {
+            if (activeSelector !== 'start' && !tabbingOutRef.current) {
               interactedRef.current = false;
               setActiveSelector('start');
               setTimeout(() => { if (startInputRef.current) startInputRef.current.focus(); }, 0);
@@ -426,8 +428,13 @@ const BusinessHoursTimeSelector = ({
                   if (autoSelectOnTab && !interactedRef.current && !startTime) {
                     onStartTimeChange('06:00');
                   }
-                  setActiveSelector(null);
-                  setFilterText('');
+                  flushSync(() => {
+                    setActiveSelector(null);
+                    setPopupShowing(false);
+                    setFilterText('');
+                  });
+                  tabbingOutRef.current = true;
+                  setTimeout(() => { tabbingOutRef.current = false; }, 100);
                 } else if (e.key === 'ArrowDown') {
                   interactedRef.current = true;
                   e.preventDefault();
@@ -453,7 +460,7 @@ const BusinessHoursTimeSelector = ({
           onClick={() => handleButtonClick('end')}
           onMouseEnter={activeSelector === 'end' ? undefined : () => handleButtonMouseEnter('end')}
           onFocus={autoSelectOnTab && !isTouchDevice() ? () => {
-            if (activeSelector !== 'end') {
+            if (activeSelector !== 'end' && !tabbingOutRef.current) {
               interactedRef.current = false;
               setActiveSelector('end');
               setTimeout(() => { if (endInputRef.current) endInputRef.current.focus(); }, 0);
@@ -507,8 +514,13 @@ const BusinessHoursTimeSelector = ({
                   if (autoSelectOnTab && !interactedRef.current && !endTime) {
                     onEndTimeChange(startTime);
                   }
-                  setActiveSelector(null);
-                  setFilterText('');
+                  flushSync(() => {
+                    setActiveSelector(null);
+                    setPopupShowing(false);
+                    setFilterText('');
+                  });
+                  tabbingOutRef.current = true;
+                  setTimeout(() => { tabbingOutRef.current = false; }, 100);
                 } else if (e.key === 'ArrowDown') {
                   interactedRef.current = true;
                   e.preventDefault();

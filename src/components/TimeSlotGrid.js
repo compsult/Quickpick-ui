@@ -111,6 +111,7 @@ const TimeSlotGrid = ({
                       className={`time-slot ${isSelected ? 'selected' : ''} ${isHighlighted ? 'first-match' : ''}`}
                       onClick={() => handleItemClick(item)}
                       onKeyDown={handleGridKeyDown}
+                      tabIndex={-1}
                       title={item.label}
                       aria-label={`Select ${item.label}`}
                     >
@@ -273,6 +274,7 @@ const TimeSlotGrid = ({
                     className={`time-slot ${isSelected ? 'selected' : ''} ${isHighlighted ? 'first-match' : ''} ${!isAvailable ? 'unavailable' : ''}`}
                     onClick={() => isAvailable && handleTimeSlotClick(hour, minute)}
                     onKeyDown={handleGridKeyDown}
+                    tabIndex={-1}
                     disabled={!isAvailable}
                     title={isAvailable ? timeDisplay : 'Time not available'}
                     aria-label={isAvailable ? `Select ${timeDisplay}` : 'Time not available'}

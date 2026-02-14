@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { flushSync } from 'react-dom';
 import TimeSlotGrid from './TimeSlotGrid';
 import './AppointmentTimeSelector.css';
 
@@ -35,6 +36,7 @@ const AppointmentTimeSelector = ({
   const buttonRef = useRef(null);
   const inputRef = useRef(null);
   const interactedRef = useRef(false);       // tracks user typing/navigating for autoSelectOnTab
+  const tabbingOutRef = useRef(false);       // prevents trigger onFocus from re-opening during tab-out
   const inputFocusedRef = useRef(false);    // ref copy for mouse-tracking interval
   const mouseTrackingIntervalRef = useRef(null);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
@@ -402,7 +404,7 @@ const AppointmentTimeSelector = ({
         onClick={handleButtonClick}
         onMouseEnter={isGridOpen ? undefined : handleButtonMouseEnter}
         onFocus={autoSelectOnTab && !isTouchDevice() ? () => {
-          if (!isGridOpen) {
+          if (!isGridOpen && !tabbingOutRef.current) {
             interactedRef.current = false;
             setIsGridOpen(true);
             setTimeout(() => { if (inputRef.current) inputRef.current.focus(); }, 0);
@@ -467,8 +469,18 @@ const AppointmentTimeSelector = ({
                     onTimeChange(minTime);
                   }
                 }
-                setIsGridOpen(false);
-                setFilterText('');
+                // Close popup synchronously so it's removed from the DOM
+                // before the browser's default Tab navigation runs.
+                // Without this, the popup's presence causes Tab to jump to body.
+                flushSync(() => {
+                  setIsGridOpen(false);
+                  setPopupShowing(false);
+                  setFilterText('');
+                });
+                // Flag to prevent trigger's onFocus from re-opening the grid
+                // when shadow DOM tab navigation wraps from input back to trigger.
+                tabbingOutRef.current = true;
+                setTimeout(() => { tabbingOutRef.current = false; }, 100);
               } else if (e.key === 'ArrowDown') {
                 interactedRef.current = true;
                 e.preventDefault();

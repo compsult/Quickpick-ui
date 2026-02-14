@@ -249,6 +249,108 @@
       margin-top: 0;
     }
 
+    /* ── Props Tables ── */
+    .props-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+    .props-table th,
+    .props-table td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .props-table th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #475569;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .props-table td code {
+      font-size: 13px;
+    }
+    .props-table td:first-child {
+      white-space: nowrap;
+    }
+
+    /* ── Collapsible Code Details ── */
+    .code-details {
+      margin-top: 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .code-details + .code-details {
+      margin-top: 8px;
+    }
+    .code-details summary {
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+      background: #f8fafc;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .code-details summary::-webkit-details-marker { display: none; }
+    .code-details summary::before {
+      content: '\25B6';
+      font-size: 10px;
+      transition: transform 0.15s;
+    }
+    .code-details[open] summary::before {
+      transform: rotate(90deg);
+    }
+    .code-details summary:hover {
+      background: #f1f5f9;
+    }
+    .code-details .code-block {
+      margin: 0;
+      border-radius: 0;
+    }
+
+    /* ── Behavior List ── */
+    .behavior-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .behavior-group h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+    .behavior-group ul {
+      list-style: none;
+      padding: 0;
+    }
+    .behavior-group li {
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.6;
+      padding: 4px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+    .behavior-group li::before {
+      content: '\2022';
+      position: absolute;
+      left: 4px;
+      color: #94a3b8;
+    }
+
+    @media (max-width: 768px) {
+      .behavior-grid { grid-template-columns: 1fr; }
+    }
+
     /* ── Footer ── */
     .footer {
       text-align: center;
@@ -352,6 +454,249 @@
           <p class="demo-desc">Works great with long lists. On desktop, start typing to narrow results — try "new" or "north".</p>
           <input id="demo-all-states" />
           <div class="demo-result" id="result-all-states">Selected: <strong>none</strong></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ React Components ══════════ -->
+  <section class="section" id="react-demos">
+    <div class="container">
+      <h2 class="section-title">React Components</h2>
+      <p class="section-subtitle">
+        The same picker as specialized React components — time selector, generic select, and business hours editor.
+      </p>
+
+      <div class="demo-grid">
+        <!-- Demo: Appointment Time Picker -->
+        <div class="demo-card">
+          <h3>Appointment Time Picker</h3>
+          <p class="demo-desc">Time grid with business hours. Type to filter on desktop — try "2p" to jump to 2 PM.</p>
+          <quickpick-appointment
+            id="demo-time-picker"
+            selected-date=""
+            business-hours=""
+            label="Appointment Time"
+            auto-select-on-tab
+          ></quickpick-appointment>
+          <div class="demo-result" id="result-time-picker">Selected: <strong>none</strong></div>
+          <details class="code-details">
+            <summary>React Booking Form Example</summary>
+            <div class="code-block">import { useState } from 'react';
+import { AppointmentTimeSelector } from 'quickpick-ui';
+
+const BUSINESS_HOURS = {
+  monday:    { enabled: true, start: '09:00', end: '17:00' },
+  tuesday:   { enabled: true, start: '09:00', end: '17:00' },
+  wednesday: { enabled: true, start: '09:00', end: '17:00' },
+  thursday:  { enabled: true, start: '09:00', end: '17:00' },
+  friday:    { enabled: true, start: '09:00', end: '17:00' },
+  saturday:  { enabled: true, start: '10:00', end: '14:00' },
+  sunday:    { enabled: false },
+};
+
+export default function BookingForm() {
+  const [date, setDate] = useState(new Date());
+  const [time, setTime] = useState(null);
+
+  return (
+    &lt;div&gt;
+      &lt;input type="date" onChange={e =&gt;
+        setDate(new Date(e.target.value + 'T12:00'))} /&gt;
+      &lt;AppointmentTimeSelector
+        selectedTime={time}
+        onTimeChange={setTime}
+        selectedDate={date}
+        businessHours={BUSINESS_HOURS}
+      /&gt;
+      &lt;button disabled={!time}&gt;Book&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</div>
+          </details>
+        </div>
+
+        <!-- Demo: Service Types -->
+        <div class="demo-card">
+          <h3>Generic Select (Service Types)</h3>
+          <p class="demo-desc">Value/label pairs as a general-purpose select. Same component, different data.</p>
+          <quickpick-appointment
+            id="demo-services"
+            data="PT:Physical Therapy,MT:Massage Therapy,AC:Acupuncture,CL:Life Coaching,PS:Psychoanalysis,WC:Wellness Coaching"
+            placeholder="Choose a service"
+            label="Service Type"
+            auto-select-on-tab
+          ></quickpick-appointment>
+          <div class="demo-result" id="result-services">Selected: <strong>none</strong></div>
+          <details class="code-details">
+            <summary>React Code</summary>
+            <div class="code-block">&lt;AppointmentTimeSelector
+  items={[
+    { value: 'PT', label: 'Physical Therapy' },
+    { value: 'MT', label: 'Massage Therapy' },
+    { value: 'AC', label: 'Acupuncture' },
+    { value: 'CL', label: 'Life Coaching' },
+  ]}
+  selectedValue={selected}
+  onTimeChange={(item) =&gt; setSelected(item.value)}
+  label="Service Type"
+  autoSelectOnTab
+/&gt;</div>
+          </details>
+        </div>
+
+        <!-- Demo: Business Hours Editor (full width) -->
+        <div class="demo-card full-width">
+          <h3>Business Hours Editor</h3>
+          <p class="demo-desc">Dual start/end time pickers. Type "2p" to jump to 2 PM, or tab through to auto-fill defaults.</p>
+          <quickpick-hours
+            id="demo-hours"
+            start-time="09:00"
+            end-time="17:00"
+            auto-select-on-tab
+          ></quickpick-hours>
+          <div class="demo-result" id="result-hours">Hours: <strong>9 AM &ndash; 5 PM</strong></div>
+          <details class="code-details">
+            <summary>React Admin Settings Example</summary>
+            <div class="code-block">import { useState } from 'react';
+import { BusinessHoursTimeSelector } from 'quickpick-ui';
+
+const DAYS = ['monday','tuesday','wednesday','thursday',
+              'friday','saturday','sunday'];
+
+export default function BusinessHoursSettings({ initial }) {
+  const [hours, setHours] = useState(initial);
+
+  const update = (day, field, value) =&gt;
+    setHours(prev =&gt; ({
+      ...prev,
+      [day]: { ...prev[day], [field]: value },
+    }));
+
+  return (
+    &lt;div&gt;
+      {DAYS.map(day =&gt; (
+        &lt;div key={day}&gt;
+          &lt;label&gt;
+            &lt;input type="checkbox"
+              checked={hours[day]?.enabled ?? false}
+              onChange={e =&gt; update(day, 'enabled', e.target.checked)}
+            /&gt;
+            {day}
+          &lt;/label&gt;
+          {hours[day]?.enabled &amp;&amp; (
+            &lt;BusinessHoursTimeSelector
+              startTime={hours[day].start || '09:00'}
+              endTime={hours[day].end || '17:00'}
+              onStartTimeChange={t =&gt; update(day, 'start', t)}
+              onEndTimeChange={t =&gt; update(day, 'end', t)}
+            /&gt;
+          )}
+        &lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}</div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ Props Reference ══════════ -->
+  <section class="section" id="props">
+    <div class="container">
+      <h2 class="section-title">Props Reference</h2>
+      <p class="section-subtitle">Full prop listing for each React component.</p>
+
+      <div class="install-options">
+        <div class="install-card">
+          <h3>AppointmentTimeSelector</h3>
+          <table class="props-table">
+            <thead>
+              <tr><th>Prop</th><th>Type</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>selectedTime</code></td><td>string</td><td>Current time value (HH:MM format)</td></tr>
+              <tr><td><code>onTimeChange</code></td><td>function</td><td>Callback when a time is selected</td></tr>
+              <tr><td><code>selectedDate</code></td><td>Date</td><td>Determines which day's business hours apply</td></tr>
+              <tr><td><code>businessHours</code></td><td>object</td><td>Config object with hours per weekday</td></tr>
+              <tr><td><code>items</code></td><td>array</td><td>Generic mode: array of {value, label}</td></tr>
+              <tr><td><code>selectedValue</code></td><td>string</td><td>Generic mode: currently selected value</td></tr>
+              <tr><td><code>placeholder</code></td><td>string</td><td>Placeholder text on the button</td></tr>
+              <tr><td><code>label</code></td><td>string</td><td>Accessible label for the control</td></tr>
+              <tr><td><code>columns</code></td><td>number</td><td>Override auto column count</td></tr>
+              <tr><td><code>popupWidth</code></td><td>string</td><td><code>'match-button'</code> | <code>'auto'</code> | CSS value</td></tr>
+              <tr><td><code>disabled</code></td><td>boolean</td><td>Disable the selector</td></tr>
+              <tr><td><code>autoSelectOnTab</code></td><td>boolean</td><td>Auto-select first option on tab-through</td></tr>
+              <tr><td><code>className</code></td><td>string</td><td>Additional CSS class</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="install-card">
+          <h3>BusinessHoursTimeSelector</h3>
+          <table class="props-table">
+            <thead>
+              <tr><th>Prop</th><th>Type</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>startTime</code></td><td>string</td><td>Opening time (HH:MM format)</td></tr>
+              <tr><td><code>endTime</code></td><td>string</td><td>Closing time (HH:MM format)</td></tr>
+              <tr><td><code>onStartTimeChange</code></td><td>function</td><td>Callback when start time changes</td></tr>
+              <tr><td><code>onEndTimeChange</code></td><td>function</td><td>Callback when end time changes</td></tr>
+              <tr><td><code>disabled</code></td><td>boolean</td><td>Disable both selectors</td></tr>
+              <tr><td><code>autoSelectOnTab</code></td><td>boolean</td><td>Auto-select first option on tab-through</td></tr>
+              <tr><td><code>width</code></td><td>string</td><td>CSS width for the container</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ Behavior ══════════ -->
+  <section class="section" id="behavior">
+    <div class="container">
+      <h2 class="section-title">Behavior</h2>
+      <p class="section-subtitle">Detailed interaction behavior across input modes and devices.</p>
+
+      <div class="behavior-grid">
+        <div class="behavior-group">
+          <h3>Desktop (Mouse)</h3>
+          <ul>
+            <li>Hover the button to open the picker popup</li>
+            <li>Mouse-leave closes the popup after a brief delay</li>
+            <li>Click a cell to select and auto-close</li>
+            <li>Popup auto-positions above or below based on viewport space</li>
+          </ul>
+        </div>
+        <div class="behavior-group">
+          <h3>Desktop (Keyboard)</h3>
+          <ul>
+            <li>Type in the input to filter visible options instantly</li>
+            <li>Enter selects the first matching option</li>
+            <li>Escape closes the popup without selecting</li>
+            <li>Arrow keys navigate cells; Home/End jump to first/last</li>
+          </ul>
+        </div>
+        <div class="behavior-group">
+          <h3>Mobile / Touch</h3>
+          <ul>
+            <li>Tap the button to toggle the popup open/closed</li>
+            <li>Input stays read-only on touch devices (no virtual keyboard)</li>
+            <li>Large tap targets sized for finger input</li>
+            <li>Tap backdrop overlay to close</li>
+          </ul>
+        </div>
+        <div class="behavior-group">
+          <h3>Tab-Through &amp; Accessibility</h3>
+          <ul>
+            <li>Tab into a field opens the picker; Tab out auto-selects the first option (when <code>autoSelectOnTab</code> is enabled)</li>
+            <li>Pre-selected values are preserved — tabbing through won't overwrite existing data</li>
+            <li><code>role="listbox"</code>, <code>aria-selected</code>, <code>aria-haspopup</code> attributes</li>
+            <li>Respects <code>prefers-reduced-motion</code> for animations</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -529,16 +874,58 @@ Quickpick('#el', {
       }
     });
 
-    // Set tab order: demos first (1–5), then "Try It Live" (6)
-    // setTimeout to wait for React to render inside shadow DOM
-    setTimeout(function() {
-      var order = [handles.months, handles.colors, handles.states, handles.preselect, handles.allStates];
-      order.forEach(function(h, i) {
-        var input = h.el.shadowRoot && h.el.shadowRoot.querySelector('input');
-        if (input) input.setAttribute('tabindex', String(i + 1));
-      });
-      document.getElementById('try-it-live').setAttribute('tabindex', '6');
-    }, 200);
+    // ── React Component Demos ──
+
+    // Helper to format 24h time to 12h display
+    function formatTime12(t) {
+      if (!t) return 'none';
+      var parts = t.split(':');
+      var h = parseInt(parts[0], 10);
+      var m = parseInt(parts[1], 10);
+      var h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+      var ampm = h < 12 ? 'AM' : 'PM';
+      return m === 0 ? h12 + ' ' + ampm : h12 + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+    }
+
+    // 6. Appointment Time Picker — set attributes via JS for complex JSON
+    var timePicker = document.getElementById('demo-time-picker');
+    var today = new Date();
+    var dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+    timePicker.setAttribute('selected-date', dateStr);
+    timePicker.setAttribute('business-hours', JSON.stringify({
+      monday:    { enabled: true, start: '09:00', end: '17:00' },
+      tuesday:   { enabled: true, start: '09:00', end: '17:00' },
+      wednesday: { enabled: true, start: '09:00', end: '17:00' },
+      thursday:  { enabled: true, start: '09:00', end: '17:00' },
+      friday:    { enabled: true, start: '09:00', end: '17:00' },
+      saturday:  { enabled: true, start: '10:00', end: '14:00' },
+      sunday:    { enabled: false }
+    }));
+    timePicker.addEventListener('time-change', function(e) {
+      document.querySelector('#result-time-picker strong').textContent = formatTime12(e.detail.time);
+    });
+
+    // 7. Service Types (generic select)
+    var servicesPicker = document.getElementById('demo-services');
+    servicesPicker.addEventListener('item-change', function(e) {
+      document.querySelector('#result-services strong').textContent = e.detail.label + ' (' + e.detail.value + ')';
+    });
+
+    // 8. Business Hours Editor
+    var hoursPicker = document.getElementById('demo-hours');
+    hoursPicker.addEventListener('start-time-change', function(e) {
+      var end = hoursPicker.getAttribute('end-time') || '17:00';
+      hoursPicker.setAttribute('start-time', e.detail.time);
+      document.querySelector('#result-hours strong').textContent = formatTime12(e.detail.time) + ' \u2013 ' + formatTime12(end);
+    });
+    hoursPicker.addEventListener('end-time-change', function(e) {
+      var start = hoursPicker.getAttribute('start-time') || '09:00';
+      hoursPicker.setAttribute('end-time', e.detail.time);
+      document.querySelector('#result-hours strong').textContent = formatTime12(start) + ' \u2013 ' + formatTime12(e.detail.time);
+    });
+
+    // Tab order follows natural DOM order: hero links → demos → react demos → rest of page.
+    // No custom tabindex needed — elements are already in the correct document order.
   </script>
 
 </body>
