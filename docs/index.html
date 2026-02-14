@@ -530,15 +530,15 @@ Quickpick('#el', {
     });
 
     // Set tab order: demos first (1–5), then "Try It Live" (6)
-    // Use requestAnimationFrame to wait for shadow DOM React renders
-    requestAnimationFrame(function() {
+    // setTimeout to wait for React to render inside shadow DOM
+    setTimeout(function() {
       var order = [handles.months, handles.colors, handles.states, handles.preselect, handles.allStates];
       order.forEach(function(h, i) {
         var input = h.el.shadowRoot && h.el.shadowRoot.querySelector('input');
         if (input) input.setAttribute('tabindex', String(i + 1));
       });
       document.getElementById('try-it-live').setAttribute('tabindex', '6');
-    });
+    }, 200);
   </script>
 
 </body>
