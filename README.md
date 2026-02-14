@@ -2,6 +2,8 @@
 
 Fast, touch-friendly picker for React and vanilla JS. Type to filter on desktop, tap to select on mobile.
 
+[Live Demo](https://compsult.github.io/Quickpick-ui/)
+
 Works as a time picker, generic select list, or business hours editor.
 
 ## Install
